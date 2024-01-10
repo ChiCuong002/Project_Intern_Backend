@@ -1,0 +1,17 @@
+.left-side {
+  width: 25%;
+  border-right: 0.5px solid black;
+}
+
+.left-side ul li {
+  display: flex;
+  justify-content: center;
+}
+
+.left-side ul li a {
+  text-decoration: none;
+}
+
+.left-side ul li {
+  list-style: none;
+}
