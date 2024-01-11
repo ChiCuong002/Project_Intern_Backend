@@ -1,0 +1,67 @@
+:root {
+  --black-1: #495057;
+  --black-2: #212529;
+  --white-1: #e9ecef;
+  --white-2: #dee2e6;
+}
+
+.left-side {
+  width: 25%;
+  margin-top: 30px;
+}
+
+.left-side ul li {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.left-side ul li.left {
+  justify-content: left;
+  margin: 20px 10px 20px 20px;
+  padding-left: 10px;
+  height: 50px;
+}
+
+.left-side ul li.left:hover {
+  background-color: var(--white-1);
+}
+
+.left-side ul li.left:active {
+  background-color: var(--white-2);
+}
+
+.left-side ul li.left a {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.left-side ul li.left a:visited {
+  color: var(--black-1);
+}
+
+.left-side ul li.left a.active {
+  color: var(--black-2);
+}
+
+.left-side ul li a {
+  text-decoration: none;
+}
+
+.left-side ul li {
+  list-style: none;
+}
+
+.icon {
+  font-size: 25px;
+  padding-right: 20px;
+  color: var(--black-1);
+}
+
+/* .icon:active {
+  color: var(--black-2);
+} */
