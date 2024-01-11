@@ -4,11 +4,18 @@
   box-sizing: border-box;
 }
 
-.container {
+.wrapper {
   display: flex;
   flex-direction: row;
   /* width: 100%; */
   min-height: 100vh;
+  position: relative;
+}
+
+#border {
+  border-left: 0.15px solid black;
+  margin-top: 30px;
+  margin-bottom: 30px;
 }
 
 .content {
