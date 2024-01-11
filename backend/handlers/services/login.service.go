@@ -8,6 +8,7 @@ import (
 	"main/models"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -22,15 +23,24 @@ import (
 func Login(username, password string) (models.User, string, error) {
 	var user models.User
 	db := storage.GetDB()
+	//hash password
+	// hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	// fmt.Println("password hashing: ", string(hashPassword))
+	// if err != nil {
+	// 	return models.User{}, "", fmt.Errorf("Error hashing password: %v", err.Error())
+	// }
 	//check email in db
 	result := db.Where("phone_number = ?", username).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return models.User{}, "", fmt.Errorf("User not registered: %v", result.Error)
 	}
 	//check match password
-	if user.Password != password {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return models.User{}, "", fmt.Errorf("Authentication error")
 	}
+	// if user.Password != string(hashPassword) {
+	// 	return models.User{}, "", fmt.Errorf("Authentication error")
+	// }
 	//create jwt token
 	claims := &helper.JwtCustomClaims{
 		UserId:    user.UserID,
