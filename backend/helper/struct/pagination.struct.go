@@ -26,11 +26,8 @@ func (p *Pagination) GetPage() int {
 	return p.Page
 }
 func (p *Pagination) GetSort() string {
-	if p.Sort == "" {
-		p.Sort = "user_id desc"
-	}
 	return p.Sort
 }
 func (p *Pagination) GetSearch() string {
-    return p.Search
+	return p.Search
 }

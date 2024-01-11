@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	storage "main/database"
 	"main/helper/scope"
 	helper "main/helper/struct"
@@ -40,7 +41,8 @@ func GetAllUserPagination(pagination helper.Pagination) (*helper.Pagination, err
 func UserDetail(id uint) (models.User, error) {
 	var db *gorm.DB = storage.GetDB()
 	user := models.User{}
-	if err := db.Model(models.User{UserID: id}).First(&user).Error; err != nil {
+	err := db.First(&user, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		//SELECT * FROM users WHERE id = 10;
 		return user, err
 	}

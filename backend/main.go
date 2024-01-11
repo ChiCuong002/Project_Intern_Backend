@@ -45,7 +45,7 @@ func main() {
 	//users management
 	//r.GET("/users", controllers.GetAllUser)
 	r.GET("/users/:id", controllers.DetailUser)
-	r.GET("/users/search", controllers.FindUser)
 	r.GET("/users", controllers.GetAllUser)
+	
 	e.Logger.Fatal(e.Start(":8080"))
 }
