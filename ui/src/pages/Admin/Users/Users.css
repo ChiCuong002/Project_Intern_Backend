@@ -3,4 +3,15 @@
   padding: 0;
   box-sizing: border-box;
 }
+/* css cho user details */
+.cus-header{
+  font-weight: bold;
+  color: #AC1818;
+  font-size: 36px;
+}
+.cus-info{
+  font-size: 20px;
+  padding: 10px 0px 10px
+}
 
+/* end of css cho user details */

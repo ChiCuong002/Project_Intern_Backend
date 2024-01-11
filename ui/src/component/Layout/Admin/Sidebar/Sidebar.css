@@ -5,6 +5,12 @@
   --white-2: #dee2e6;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .left-side {
   width: 25%;
   margin-top: 30px;

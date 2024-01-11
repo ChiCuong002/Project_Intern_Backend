@@ -10,6 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
+	gomiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 type jwtCustomClaims struct {
@@ -25,12 +26,16 @@ func restricted(c echo.Context) error {
 }
 func main() {
 	e := echo.New()
+	e.Use(gomiddleware.CORSWithConfig(gomiddleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 	storage.InitDB()
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 	e.POST("/login", controllers.Login)
-
+	e.GET("/users/:id", controllers.DetailUser)
 	//restricted group
 	r := e.Group("/restricted")
 	config := echojwt.Config{
@@ -46,6 +51,6 @@ func main() {
 	//r.GET("/users", controllers.GetAllUser)
 	r.GET("/users/:id", controllers.DetailUser)
 	r.GET("/users", controllers.GetAllUser)
-	
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
