@@ -3,6 +3,7 @@ package controllers
 import (
 	//"crypto/ecdsa"
 	"fmt"
+	storage "main/database"
 	"main/handlers/services"
 	"main/models"
 	"main/schema"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type LoginRequest struct {
@@ -46,8 +46,9 @@ func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
-func RegisterUser(db *gorm.DB, c echo.Context) error {
+func RegisterUser(c echo.Context) error {
 	// Đọc dữ liệu từ request
+	db := storage.GetDB() 
 	var newUser schema.User
 	err := c.Bind(&newUser)
 	if err != nil {

@@ -42,6 +42,8 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
+	//register route
+	e.POST("/register", controllers.RegisterUser)
 	//login route
 	e.POST("/login", controllers.Login)
 
@@ -64,5 +66,6 @@ func main() {
 	r.GET("/users", controllers.GetAllUser)
 	r.GET("/users/:id", controllers.DetailUser)
 	r.OPTIONS("/users/:id", echo.MethodNotAllowedHandler)
+	r.POST("/changepassword", controllers.ChangePasswordUsers)
 	e.Logger.Fatal(e.Start(":8080"))
 }

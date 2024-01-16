@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -16,12 +17,12 @@ type Role struct {
 type User struct {
 	UserID      uint `gorm:"primaryKey;autoIncrement"`
 	RoleID      uint
-	FirstName   string
-	LastName    string
-	Address     string
-	Email       string
-	PhoneNumber string
-	Password    string
+	FirstName   string    `form:"FirstName"`
+	LastName    string    `form:"LastName"`
+	Address     string    `form:"Address"`
+	Email       string    `form:"Email"`
+	PhoneNumber string    `form:"PhoneNumber"`
+	Password    string    `form:"Password"`
 	Products    []Product `gorm:"foreignKey:UserID"`
 	Orders      []Order   `gorm:"foreignKey:UserID"`
 }
@@ -64,17 +65,18 @@ func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
-func (u *User) ChangePassword(db *gorm.DB, newPassword string) error {
-	hash, err := HashPassword(newPassword)
+func (u *User) ChangePassword(db *gorm.DB, newPassword, currentPassword string) error {
+	hashNewPass, err := HashPassword(newPassword)
+	fmt.Println("user: ", u)
 	if err != nil {
 		panic("ma hoa that bai")
 	}
-	match := CheckPasswordHash(newPassword, hash)
+	match := CheckPasswordHash(currentPassword, u.Password)
 	if !match {
 		panic("mk ma hoa khong trung")
 	}
 	// Cập nhật mật khẩu người dùng trong cơ sở dữ liệu
-	result := db.Model(u).Update("password", hash)
+	result := db.Model(u).Update("password", hashNewPass)
 	if result.Error != nil {
 		return result.Error
 	}

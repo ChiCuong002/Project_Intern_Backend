@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	storage "main/database"
 	"main/handlers/services"
 	helper "main/helper/struct"
 	"main/schema"
@@ -9,13 +10,15 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
+	//"gorm.io/gorm"
 )
 
 const (
 	LIMIT_DEFAULT = 10
 	PAGE_DEFAULT  = 1
 )
+//get db
+//var db = storage.GetDB()
 
 func sortString(sort string) string {
 	order := sort[0]
@@ -74,9 +77,11 @@ func DetailUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-func ChangePasswordUsers(db *gorm.DB, c echo.Context) error {
+func ChangePasswordUsers(c echo.Context) error {
+	db := storage.GetDB()
 	var requestData struct {
 		UserID      uint   `json:"UserID"`
+		CurrentPassword string `json:"CurrentPassword"`
 		NewPassword string `json:"NewPassword"`
 	}
 
@@ -96,7 +101,7 @@ func ChangePasswordUsers(db *gorm.DB, c echo.Context) error {
 	}
 
 	// Thay đổi mật khẩu của người dùng
-	err = userToUpdate.ChangePassword(db, requestData.NewPassword)
+	err = userToUpdate.ChangePassword(db, requestData.NewPassword, requestData.CurrentPassword)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "Lỗi thay đổi mật khẩu: "+err.Error())
 	}
