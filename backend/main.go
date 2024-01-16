@@ -7,6 +7,7 @@ import (
 	"main/middleware"
 	"net/http"
 
+	//"main/schema"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -26,16 +27,24 @@ func restricted(c echo.Context) error {
 }
 func main() {
 	e := echo.New()
-	e.Use(gomiddleware.CORSWithConfig(gomiddleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-	}))
+	e.Use(gomiddleware.Logger())
 	storage.InitDB()
+	//CORS config for all routes
+	CORSConfig := gomiddleware.CORSWithConfig(gomiddleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	})
+	//Apply CORS middleware to all routes
+	e.Use(CORSConfig)
+
+	//main route
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
+	//login route
 	e.POST("/login", controllers.Login)
-	e.GET("/users/:id", controllers.DetailUser)
+
 	//restricted group
 	r := e.Group("/restricted")
 	config := echojwt.Config{
@@ -44,13 +53,16 @@ func main() {
 		},
 		SigningKey: []byte("secret"),
 	}
+	//auth middleware
 	r.Use(echojwt.WithConfig(config))
 	r.Use(middleware.AdminAuthentication)
+
+	//restricted
+
 	r.GET("", restricted)
 	//users management
-	//r.GET("/users", controllers.GetAllUser)
-	r.GET("/users/:id", controllers.DetailUser)
 	r.GET("/users", controllers.GetAllUser)
-
+	r.GET("/users/:id", controllers.DetailUser)
+	r.OPTIONS("/users/:id", echo.MethodNotAllowedHandler)
 	e.Logger.Fatal(e.Start(":8080"))
 }

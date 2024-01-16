@@ -68,5 +68,6 @@ func DetailUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
+	fmt.Println("user: ", user)
 	return c.JSON(http.StatusOK, user)
 }

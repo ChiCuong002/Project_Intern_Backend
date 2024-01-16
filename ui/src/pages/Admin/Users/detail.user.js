@@ -11,11 +11,20 @@ function DetailUser() {
     const request = "http://localhost:8080/users/" + id
     console.log(request)
     const [user, setUser] = useState({})
+    const getTokenFromLocalStorage = () => {
+        return localStorage.getItem('token');
+    };
     useEffect(() => {
       if (id) {
-        axios.get(`http://localhost:8080/users/${id}`).then(res => {
+        axios.get(`http://localhost:8080/restricted/users/${id}`, {
+            headers : {
+                Authorization : `Bearer ${getTokenFromLocalStorage()}`,
+            }
+        }).then(res => {
             console.log(res.data)
-          setUser(res.data)
+            setUser(res.data)
+        }).catch(error => {
+            console.log('Error ', error)
         })
       }
     }, [])
