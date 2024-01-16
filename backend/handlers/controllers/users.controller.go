@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"main/handlers/services"
 	helper "main/helper/struct"
+	"main/schema"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 const (
@@ -70,4 +72,34 @@ func DetailUser(c echo.Context) error {
 	}
 	fmt.Println("user: ", user)
 	return c.JSON(http.StatusOK, user)
+}
+
+func ChangePasswordUsers(db *gorm.DB, c echo.Context) error {
+	var requestData struct {
+		UserID      uint   `json:"UserID"`
+		NewPassword string `json:"NewPassword"`
+	}
+
+	err := c.Bind(&requestData)
+	if err != nil {
+		fmt.Println("Error binding request:", err)
+		return c.JSON(http.StatusBadRequest, "lấy người dùng ko đc")
+	}
+
+	fmt.Println("User ID:", requestData.UserID)
+	fmt.Println("New Password:", requestData.NewPassword)
+
+	var userToUpdate schema.User
+	result := db.First(&userToUpdate, requestData.UserID)
+	if result.Error != nil {
+		return c.JSON(http.StatusNotFound, "Không tìm thấy người dùng")
+	}
+
+	// Thay đổi mật khẩu của người dùng
+	err = userToUpdate.ChangePassword(db, requestData.NewPassword)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "Lỗi thay đổi mật khẩu: "+err.Error())
+	}
+
+	return c.JSON(http.StatusOK, "Thay đổi mật khẩu thành công")
 }

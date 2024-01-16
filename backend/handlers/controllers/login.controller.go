@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"main/handlers/services"
 	"main/models"
+	"main/schema"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type LoginRequest struct {
@@ -34,4 +37,47 @@ func Login(c echo.Context) error {
 		"user":  user,
 		"token": token,
 	})
+}
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+func RegisterUser(db *gorm.DB, c echo.Context) error {
+	// Đọc dữ liệu từ request
+	var newUser schema.User
+	err := c.Bind(&newUser)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid request payload")
+	}
+	// Kiểm tra xem email đã tồn tại chưa
+	var existingUser schema.User
+	result := db.Where("phone_number = ?", newUser.PhoneNumber).First(&existingUser)
+	if result.RowsAffected > 0 {
+		return c.JSON(http.StatusConflict, "Số điện thoại đã được đăng ký")
+	}
+	if len(newUser.Password) < 8 {
+		return c.JSON(http.StatusBadRequest, "Mật khẩu cần ít nhất 8 kí tự")
+	}
+	hash, err := HashPassword(newUser.Password)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Lỗi khi mã hóa password")
+	}
+	match := CheckPasswordHash(newUser.Password, hash)
+	if !match {
+		return c.JSON(http.StatusBadRequest, "Lỗi khi check password")
+	}
+	newUser.Password = hash
+	if newUser.RoleID == 0 {
+		newUser.RoleID = 2
+	}
+	result = db.Create(&newUser)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, "Lỗi: "+result.Error.Error())
+	}
+
+	return c.JSON(http.StatusOK, "Đăng ký thành công!")
 }
