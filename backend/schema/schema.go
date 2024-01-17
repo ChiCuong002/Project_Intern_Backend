@@ -23,12 +23,14 @@ type User struct {
 	Email       string    `form:"Email"`
 	PhoneNumber string    `form:"PhoneNumber"`
 	Password    string    `form:"Password"`
+	IsActive    bool      `gorm:"default:true"`
 	Products    []Product `gorm:"foreignKey:UserID"`
 	Orders      []Order   `gorm:"foreignKey:UserID"`
 }
 type Category struct {
 	CategoryID   uint `gorm:"primaryKey;autoIncrement"`
 	CategoryName string
+	IsActive     bool      `gorm:"default:true"`
 	Products     []Product `gorm:"foreignKey:CategoryID"`
 }
 type Product struct {
@@ -89,5 +91,6 @@ func Migration() {
 	if err != nil {
 		panic("failed to connect database")
 	}
+	//db.Migrator().DropTable(&Role{}, &User{}, &Category{}, &Product{}, &Image{}, &Order{})
 	db.AutoMigrate(&Role{}, &User{}, &Category{}, &Product{}, &Image{}, &Order{})
 }

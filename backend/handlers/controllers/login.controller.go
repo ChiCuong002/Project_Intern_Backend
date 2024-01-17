@@ -5,6 +5,7 @@ import (
 	"fmt"
 	storage "main/database"
 	"main/handlers/services"
+	"main/helper/validation"
 	"main/models"
 	"main/schema"
 	"net/http"
@@ -23,6 +24,20 @@ func Login(c echo.Context) error {
 	if err := c.Bind(&LoginRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid JSON format"})
 	}
+	//phone number validate
+	if !validation.IsPhoneNumber(LoginRequest.PhoneNumber) {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"error" : "Invalid phone number format",
+		})
+	}
+	//password validate
+	isPassword, errs := validation.IsPassword(LoginRequest.Password)
+	if !isPassword {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"errors" : errs,
+		})
+	}
+	//
 	user := models.User{}
 	username := LoginRequest.PhoneNumber
 	password := LoginRequest.Password

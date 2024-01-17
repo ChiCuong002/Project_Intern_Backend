@@ -15,7 +15,7 @@ import (
 func Login(username, password string) (models.User, string, error) {
 	var user models.User
 	db := storage.GetDB()
-	//check email in db
+	//check phone number in db
 	result := db.Where("phone_number = ?", username).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return models.User{}, "", fmt.Errorf("User not registered: %v", result.Error)

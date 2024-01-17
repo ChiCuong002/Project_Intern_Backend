@@ -5,6 +5,7 @@ import (
 	"main/handlers/controllers"
 	helper "main/helper/struct"
 	"main/middleware"
+	"main/schema"
 	"net/http"
 
 	//"main/schema"
@@ -27,6 +28,7 @@ func restricted(c echo.Context) error {
 }
 func main() {
 	e := echo.New()
+	schema.Migration()
 	e.Use(gomiddleware.Logger())
 	storage.InitDB()
 	//CORS config for all routes
@@ -65,7 +67,10 @@ func main() {
 	//users management
 	r.GET("/users", controllers.GetAllUser)
 	r.GET("/users/:id", controllers.DetailUser)
-	r.OPTIONS("/users/:id", echo.MethodNotAllowedHandler)
 	r.POST("/changepassword", controllers.ChangePasswordUsers)
+	r.PATCH("/block/:id", controllers.BlockUser)
+	//categories management
+	r.GET("/categories", controllers.GetCategories)
+	r.GET("/category/:id", controllers.DetailCategory)
 	e.Logger.Fatal(e.Start(":8080"))
 }

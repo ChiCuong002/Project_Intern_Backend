@@ -10,23 +10,20 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	//"gorm.io/gorm"
 )
 
 const (
 	LIMIT_DEFAULT = 10
 	PAGE_DEFAULT  = 1
 )
-//get db
-//var db = storage.GetDB()
 
 func sortString(sort string) string {
 	order := sort[0]
 	sortString := sort[0:]
 	if rune(order) == '+' {
-		sortString = sortString + " asc"
-	} else {
 		sortString = sortString + " desc"
+	} else {
+		sortString = sortString + " asc"
 	}
 	fmt.Println("sortString: ", sortString)
 	return sortString
@@ -80,11 +77,10 @@ func DetailUser(c echo.Context) error {
 func ChangePasswordUsers(c echo.Context) error {
 	db := storage.GetDB()
 	var requestData struct {
-		UserID      uint   `json:"UserID"`
+		UserID          uint   `json:"UserID"`
 		CurrentPassword string `json:"CurrentPassword"`
-		NewPassword string `json:"NewPassword"`
+		NewPassword     string `json:"NewPassword"`
 	}
-
 	err := c.Bind(&requestData)
 	if err != nil {
 		fmt.Println("Error binding request:", err)
@@ -107,4 +103,24 @@ func ChangePasswordUsers(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Thay đổi mật khẩu thành công")
+}
+func BlockUser(c echo.Context) error {
+	id := c.Param("id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	fmt.Println("id: ", idInt)
+	user, err := services.BlockUser(uint(idInt))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err,
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Block/Unblock user successfully",
+		"user":    user,
+	})
 }
