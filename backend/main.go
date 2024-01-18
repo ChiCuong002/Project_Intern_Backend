@@ -67,5 +67,6 @@ func main() {
 	r.GET("/users/:id", controllers.DetailUser)
 	r.OPTIONS("/users/:id", echo.MethodNotAllowedHandler)
 	r.POST("/changepassword", controllers.ChangePasswordUsers)
+	e.POST("/addcategory", controllers.AddCategory)
 	e.Logger.Fatal(e.Start(":8080"))
 }
