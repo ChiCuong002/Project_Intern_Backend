@@ -5,24 +5,28 @@ import (
 	"fmt"
 	storage "main/database"
 	helper "main/helper/struct"
-	"main/models"
+	"main/schema"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
-func Login(username, password string) (models.User, string, error) {
-	var user models.User
+func Login(username, password string) (schema.User, string, error) {
+	var user schema.User
 	db := storage.GetDB()
 	//check phone number in db
 	result := db.Where("phone_number = ?", username).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return models.User{}, "", fmt.Errorf("User not registered: %v", result.Error)
+		return schema.User{}, "", fmt.Errorf("User not registered: %v", result.Error)
+	}
+	//check if user is active
+	if !user.IsActive {
+		return schema.User{}, "", fmt.Errorf("User is blocked")
 	}
 	//check match password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return models.User{}, "", fmt.Errorf("Authentication error")
+		return schema.User{}, "", fmt.Errorf("Authentication error")
 	}
 	//create jwt token
 	claims := &helper.JwtCustomClaims{
@@ -34,7 +38,7 @@ func Login(username, password string) (models.User, string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte("secret"))
 	if err != nil {
-		return models.User{}, "", fmt.Errorf("Signed token error")
+		return schema.User{}, "", fmt.Errorf("Signed token error")
 	}
 	return user, t, nil
 }

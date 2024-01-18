@@ -15,17 +15,17 @@ type Role struct {
 	Users []User `gorm:"foreignKey:RoleID"`
 }
 type User struct {
-	UserID      uint `gorm:"primaryKey;autoIncrement"`
-	RoleID      uint
-	FirstName   string    `form:"FirstName"`
-	LastName    string    `form:"LastName"`
-	Address     string    `form:"Address"`
-	Email       string    `form:"Email"`
-	PhoneNumber string    `form:"PhoneNumber"`
-	Password    string    `form:"Password"`
-	IsActive    bool      `gorm:"default:true"`
-	Products    []Product `gorm:"foreignKey:UserID"`
-	Orders      []Order   `gorm:"foreignKey:UserID"`
+	UserID      uint      `json:"user_id" gorm:"primaryKey;autoIncrement"`
+	RoleID      uint      `json:"role_id"`
+	FirstName   string    `json:"first_name" form:"FirstName"`
+	LastName    string    `json:"last_name" form:"LastName"`
+	Address     string    `json:"address" form:"Address"`
+	Email       string    `json:"email" form:"Email"`
+	PhoneNumber string    `json:"phone_number" form:"PhoneNumber"`
+	Password    string    `json:"password" form:"Password"`
+	IsActive    bool      `json:"is_active" gorm:"default:true"`
+	Products    []Product `json:"products" gorm:"foreignKey:UserID"`
+	Orders      []Order   `json:"orders" gorm:"foreignKey:UserID"`
 }
 type Category struct {
 	CategoryID   uint `gorm:"primaryKey;autoIncrement"`

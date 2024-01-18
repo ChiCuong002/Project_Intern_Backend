@@ -6,7 +6,6 @@ import (
 	storage "main/database"
 	"main/handlers/services"
 	"main/helper/validation"
-	"main/models"
 	"main/schema"
 	"net/http"
 
@@ -27,18 +26,18 @@ func Login(c echo.Context) error {
 	//phone number validate
 	if !validation.IsPhoneNumber(LoginRequest.PhoneNumber) {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"error" : "Invalid phone number format",
+			"error": "Invalid phone number format",
 		})
 	}
 	//password validate
 	isPassword, errs := validation.IsPassword(LoginRequest.Password)
 	if !isPassword {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"errors" : errs,
+			"errors": errs,
 		})
 	}
 	//
-	user := models.User{}
+	user := schema.User{}
 	username := LoginRequest.PhoneNumber
 	password := LoginRequest.Password
 	fmt.Println("Received phone_number:", username)
@@ -63,7 +62,7 @@ func CheckPasswordHash(password, hash string) bool {
 }
 func RegisterUser(c echo.Context) error {
 	// Đọc dữ liệu từ request
-	db := storage.GetDB() 
+	db := storage.GetDB()
 	var newUser schema.User
 	err := c.Bind(&newUser)
 	if err != nil {
