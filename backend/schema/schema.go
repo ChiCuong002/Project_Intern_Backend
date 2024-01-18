@@ -71,11 +71,11 @@ func (u *User) ChangePassword(db *gorm.DB, newPassword, currentPassword string) 
 	hashNewPass, err := HashPassword(newPassword)
 	fmt.Println("user: ", u)
 	if err != nil {
-		panic("ma hoa that bai")
+		return fmt.Errorf("hashing password failed")
 	}
 	match := CheckPasswordHash(currentPassword, u.Password)
 	if !match {
-		panic("mk ma hoa khong trung")
+		return fmt.Errorf("current password not match")
 	}
 	// Cập nhật mật khẩu người dùng trong cơ sở dữ liệu
 	result := db.Model(u).Update("password", hashNewPass)
