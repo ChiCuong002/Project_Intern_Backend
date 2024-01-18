@@ -83,8 +83,16 @@ func (u *User) ChangePassword(db *gorm.DB, newPassword, currentPassword string) 
 
 	return nil
 }
+func (c *Category) ChangeNameCategory(db *gorm.DB, newName string) error {
+	result := db.Model(c).Update("category_name", newName)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
 func Migration() {
-	dsn := "host=localhost user=postgres password=chicuong dbname=fitness-api port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := "host=localhost user=postgres password=sa dbname=fitness-api port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
