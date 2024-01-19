@@ -7,7 +7,7 @@ import (
 	"main/middleware"
 	"main/schema"
 	"net/http"
-
+	productController "main/handlers/controllers/product"
 	//"main/schema"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -48,6 +48,9 @@ func main() {
 	e.POST("/register", controllers.RegisterUser)
 	//login route
 	e.POST("/login", controllers.Login)
+	//user route
+	u := e.Group("/api")
+	u.POST("/addproduct", productController.AddProduct)
 
 	//restricted group
 	r := e.Group("/restricted")
