@@ -76,6 +76,11 @@ func RegisterUser(c echo.Context) error {
 	// Kiểm tra xem email đã tồn tại chưa
 	var existingUser schema.User
 	result := db.Where("phone_number = ?", newUser.PhoneNumber).First(&existingUser)
+	if len(newUser.PhoneNumber) != 10 {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message" : "Phone number is invalid",
+		})
+	}
 	if result.RowsAffected > 0 {
 		return c.JSON(http.StatusConflict, echo.Map{
 			"message" : "Phone number is already exists",
