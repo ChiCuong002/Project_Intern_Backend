@@ -1,6 +1,8 @@
 package helper
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type JwtCustomClaims struct {
 	UserId    uint   `json:"user_id"`
@@ -9,3 +11,4 @@ type JwtCustomClaims struct {
 	IsAdmin   uint   `json:"role_id"`
 	jwt.RegisteredClaims
 }
+

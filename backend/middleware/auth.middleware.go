@@ -30,6 +30,7 @@ func AdminAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 		if claims.IsAdmin != ADMIN {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Error: Authorization Required")
 		}
+		c.Set("userID", claims.UserId)
 		return next(c)
 	}
 }

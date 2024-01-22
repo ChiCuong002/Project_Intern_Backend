@@ -33,6 +33,9 @@ func GetAllUserPagination(pagination helper.Pagination) (*helper.Pagination, err
 	query = Search(query, pagination.Search)
 	query = query.Scopes(scope.Paginate(query, &pagination))
 	query.Find(&users)
+	if query.RowsAffected == 0 {
+		pagination.TotalPages = 1
+	}
 	pagination.Rows = users
 	return &pagination, nil
 }

@@ -8,6 +8,7 @@ import (
 	"main/schema"
 	"net/http"
 	productController "main/handlers/controllers/product"
+	userController "main/handlers/controllers/user"
 	//"main/schema"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -68,10 +69,11 @@ func main() {
 
 	r.GET("", restricted)
 	//users management
-	r.GET("/users", controllers.GetAllUser)
-	r.GET("/users/:id", controllers.DetailUser)
-	r.POST("/changepassword", controllers.ChangePasswordUsers)
-	r.PATCH("/block/:id", controllers.BlockUser)
+	r.GET("/users", controllers.GetAllUser) //user list
+	r.GET("/users/:id", controllers.DetailUser) //user detail
+	r.GET("/update-profile", userController.UpdateUser) //admin update admin's infomation
+	r.POST("/changepassword", controllers.ChangePasswordUsers) //change user's password
+	r.PATCH("/block/:id", controllers.BlockUser) //block or unblock user
 	//categories management
 	r.GET("/categories", controllers.GetCategories)
 	r.GET("/category/:id", controllers.DetailCategory)
