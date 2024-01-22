@@ -10,6 +10,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func CategoriesDropDown(c echo.Context) error {
+	categories, err := services.CategoriesDropDown()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message":    "Get all categories successfull",
+		"categories": categories,
+	})
+}
+
 func GetCategories(c echo.Context) error {
 	page, err := strconv.Atoi(c.QueryParam("page"))
 	if err != nil {

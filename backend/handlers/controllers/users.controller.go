@@ -22,8 +22,10 @@ func sortString(sort string) string {
 	sortString := sort[0:]
 	if rune(order) == '+' {
 		sortString = sortString + " desc"
-	} else {
+	} else if rune(order) == '-' {
 		sortString = sortString + " asc"
+	} else {
+		sortString = ""
 	}
 	fmt.Println("sortString: ", sortString)
 	return sortString
@@ -85,7 +87,7 @@ func ChangePasswordUsers(c echo.Context) error {
 	if err != nil {
 		fmt.Println("Error binding request:", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message" : "Binding data failed",
+			"message": "Binding data failed",
 		})
 	}
 
@@ -96,7 +98,7 @@ func ChangePasswordUsers(c echo.Context) error {
 	result := db.First(&userToUpdate, requestData.UserID)
 	if result.Error != nil {
 		return c.JSON(http.StatusNotFound, echo.Map{
-			"message" : "User not found",
+			"message": "User not found",
 		})
 	}
 
@@ -104,12 +106,12 @@ func ChangePasswordUsers(c echo.Context) error {
 	err = userToUpdate.ChangePassword(db, requestData.NewPassword, requestData.CurrentPassword)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message" : err.Error(),
+			"message": err.Error(),
 		})
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"message" : "Password is changed",
+		"message": "Password is changed",
 	})
 }
 func BlockUser(c echo.Context) error {
@@ -132,3 +134,4 @@ func BlockUser(c echo.Context) error {
 		"user":    user,
 	})
 }
+

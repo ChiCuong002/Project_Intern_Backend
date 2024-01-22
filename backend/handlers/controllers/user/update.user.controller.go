@@ -2,6 +2,7 @@ package controller
 
 import (
 	//"main/schema"
+	"fmt"
 	service "main/handlers/services/user"
 	helper "main/helper/struct"
 	"net/http"
@@ -10,11 +11,12 @@ import (
 )
 
 func UpdateUser(c echo.Context) error {
+	fmt.Println("Updated user")
 	userID := c.Get("userID").(uint)
 	data := helper.UpdateData{}
 	if err := c.Bind(&data); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message" : "Error binding data",
+			"message": "Error binding data",
 		})
 	}
 	data.UserID = userID
@@ -25,6 +27,6 @@ func UpdateUser(c echo.Context) error {
 		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
-		"message" : "User updated successfully",
+		"message": "User infomation is updated successfully",
 	})
 }

@@ -116,23 +116,8 @@ func AddProduct(c echo.Context) error {
 	}
 	// Iterate over the image files and upload each one
 	for _, image := range images {
-		// Open the image file
-		src, err := image.Open()
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, err)
-		}
-		defer src.Close()
-
 		// Generate a unique key for the S3 bucket
 		bucketKey := uuid.New().String()
-
-		// Upload the image to AWS
-		err = awsService.UploadFile(os.Getenv("BUCKETNAME"), bucketKey, src)
-		if err != nil {
-			log.Println("Failed to upload the image:", err)
-		} else {
-			log.Println("Image uploaded successfully")
-		}
 		//create image path
 		imagePath := getImagePath(bucketKey)
 		//insert the image into database
@@ -147,6 +132,19 @@ func AddProduct(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, "Failed to insert image")
 		}
 		product.Images = append(product.Images, *img)
+		// Open the image file
+		src, err := image.Open()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err)
+		}
+		defer src.Close()
+		// Upload the image to AWS
+		err = awsService.UploadFile(os.Getenv("BUCKETNAME"), bucketKey, src)
+		if err != nil {
+			log.Println("Failed to upload the image:", err)
+		} else {
+			log.Println("Image uploaded successfully")
+		}
 	}
 	tx.Commit()
 	return c.JSON(http.StatusOK, product)

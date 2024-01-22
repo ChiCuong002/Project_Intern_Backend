@@ -3,12 +3,13 @@ package main
 import (
 	storage "main/database"
 	"main/handlers/controllers"
+	productController "main/handlers/controllers/product"
+	userController "main/handlers/controllers/user"
 	helper "main/helper/struct"
 	"main/middleware"
 	"main/schema"
 	"net/http"
-	productController "main/handlers/controllers/product"
-	userController "main/handlers/controllers/user"
+
 	//"main/schema"
 	"github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -27,11 +28,21 @@ type jwtCustomClaims struct {
 func restricted(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Admin here")
 }
+func api(c echo.Context) error {
+	return c.JSON(http.StatusOK, "User here")
+}
 func main() {
 	e := echo.New()
 	schema.Migration()
 	e.Use(gomiddleware.Logger())
 	storage.InitDB()
+	//echojwt config
+	config := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(helper.JwtCustomClaims)
+		},
+		SigningKey: []byte("secret"),
+	}
 	//CORS config for all routes
 	CORSConfig := gomiddleware.CORSWithConfig(gomiddleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -49,18 +60,17 @@ func main() {
 	e.POST("/register", controllers.RegisterUser)
 	//login route
 	e.POST("/login", controllers.Login)
+	//categories drop down
+	e.GET("/categories-dropdown", controllers.CategoriesDropDown)
 	//user route
 	u := e.Group("/api")
+	u.Use(echojwt.WithConfig(config))
+	u.Use(middleware.UserAuthentication)
+	u.GET("", api)
 	u.POST("/addproduct", productController.AddProduct)
-
 	//restricted group
 	r := e.Group("/restricted")
-	config := echojwt.Config{
-		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(helper.JwtCustomClaims)
-		},
-		SigningKey: []byte("secret"),
-	}
+
 	//auth middleware
 	r.Use(echojwt.WithConfig(config))
 	r.Use(middleware.AdminAuthentication)
@@ -69,11 +79,11 @@ func main() {
 
 	r.GET("", restricted)
 	//users management
-	r.GET("/users", controllers.GetAllUser) //user list
-	r.GET("/users/:id", controllers.DetailUser) //user detail
-	r.GET("/update-profile", userController.UpdateUser) //admin update admin's infomation
+	r.GET("/users", controllers.GetAllUser)                    //user list
+	r.GET("/users/:id", controllers.DetailUser)                //user detail
+	r.POST("/update-profile", userController.UpdateUser)       //admin update admin's infomation
 	r.POST("/changepassword", controllers.ChangePasswordUsers) //change user's password
-	r.PATCH("/block/:id", controllers.BlockUser) //block or unblock user
+	r.PATCH("/block/:id", controllers.BlockUser)               //block or unblock user
 	//categories management
 	r.GET("/categories", controllers.GetCategories)
 	r.GET("/category/:id", controllers.DetailCategory)

@@ -34,14 +34,14 @@ type Category struct {
 	Products     []Product `gorm:"foreignKey:CategoryID"`
 }
 type Product struct {
-	ProductID   uint `json:"product_id" form:"product_id" gorm:"primaryKey;autoIncrement"`
-	UserID      uint `json:"user_id" form:"user_id"`
-	CategoryID  uint `json:"category_id" form:"category_id"`
-	ProductName string `json:"product_name" form:"product_name"`
-	Description string `json:"description" form:"description"`
+	ProductID   uint    `json:"product_id" form:"product_id" gorm:"primaryKey;autoIncrement"`
+	UserID      uint    `json:"user_id" form:"user_id"`
+	CategoryID  uint    `json:"category_id" form:"category_id"`
+	ProductName string  `json:"product_name" form:"product_name"`
+	Description string  `json:"description" form:"description"`
 	Price       float64 `json:"price" form:"price"`
-	Quantity    uint `json:"quantity" form:"quantity"`
-	ImagePath   string `json:"image" form:"image"`
+	Quantity    uint    `json:"quantity" form:"quantity"`
+	ImagePath   string  `json:"image" form:"image"`
 	Images      []Image `gorm:"foreignKey:ProductID"`
 	Orders      []Order `gorm:"foreignKey:ProductID"`
 }

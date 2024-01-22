@@ -7,7 +7,6 @@ import (
 	"main/helper/scope"
 	helper "main/helper/struct"
 	"main/models"
-	"main/schema"
 
 	//"math"
 
@@ -39,9 +38,9 @@ func GetAllUserPagination(pagination helper.Pagination) (*helper.Pagination, err
 	pagination.Rows = users
 	return &pagination, nil
 }
-func UserDetail(id uint) (schema.User, error) {
+func UserDetail(id uint) (helper.UserResponse, error) {
 	var db *gorm.DB = storage.GetDB()
-	user := schema.User{}
+	user := helper.UserResponse{}
 	err := db.First(&user, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		//SELECT * FROM users WHERE id = 10;
@@ -49,7 +48,7 @@ func UserDetail(id uint) (schema.User, error) {
 	}
 	return user, nil
 }
-func BlockUser(id uint) (schema.User, error) {
+func BlockUser(id uint) (helper.UserResponse, error) {
 	var db *gorm.DB = storage.GetDB()
 	user, err := UserDetail(id)
 	if err != nil {
