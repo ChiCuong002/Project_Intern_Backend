@@ -124,7 +124,7 @@ func BlockUser(c echo.Context) error {
 	user, err := services.BlockUser(uint(idInt))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"error": err,
+			"message": err,
 		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
