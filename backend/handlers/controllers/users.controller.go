@@ -84,7 +84,9 @@ func ChangePasswordUsers(c echo.Context) error {
 	err := c.Bind(&requestData)
 	if err != nil {
 		fmt.Println("Error binding request:", err)
-		return c.JSON(http.StatusBadRequest, "lấy người dùng ko đc")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message" : "Binding data failed",
+		})
 	}
 
 	fmt.Println("User ID:", requestData.UserID)
@@ -93,16 +95,22 @@ func ChangePasswordUsers(c echo.Context) error {
 	var userToUpdate schema.User
 	result := db.First(&userToUpdate, requestData.UserID)
 	if result.Error != nil {
-		return c.JSON(http.StatusNotFound, "Không tìm thấy người dùng")
+		return c.JSON(http.StatusNotFound, echo.Map{
+			"message" : "User not found",
+		})
 	}
 
 	// Thay đổi mật khẩu của người dùng
 	err = userToUpdate.ChangePassword(db, requestData.NewPassword, requestData.CurrentPassword)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Lỗi thay đổi mật khẩu: "+err.Error())
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message" : err.Error(),
+		})
 	}
 
-	return c.JSON(http.StatusOK, "Thay đổi mật khẩu thành công")
+	return c.JSON(http.StatusOK, echo.Map{
+		"message" : "Password is changed",
+	})
 }
 func BlockUser(c echo.Context) error {
 	id := c.Param("id")

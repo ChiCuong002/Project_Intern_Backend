@@ -5,7 +5,7 @@ import (
 	"fmt"
 	storage "main/database"
 	"main/handlers/services"
-	"main/helper/validation"
+	//"main/helper/validation"
 	"main/schema"
 	"net/http"
 
@@ -21,21 +21,21 @@ type LoginRequest struct {
 func Login(c echo.Context) error {
 	var LoginRequest LoginRequest
 	if err := c.Bind(&LoginRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid JSON format"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid JSON format"})
 	}
-	//phone number validate
-	if !validation.IsPhoneNumber(LoginRequest.PhoneNumber) {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"error": "Invalid phone number format",
-		})
-	}
-	//password validate
-	isPassword, errs := validation.IsPassword(LoginRequest.Password)
-	if !isPassword {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"errors": errs,
-		})
-	}
+	// //phone number validate
+	// if !validation.IsPhoneNumber(LoginRequest.PhoneNumber) {
+	// 	return c.JSON(http.StatusBadRequest, echo.Map{
+	// 		"error": "Invalid phone number format",
+	// 	})
+	// }
+	// //password validate
+	// isPassword, errs := validation.IsPassword(LoginRequest.Password)
+	// if !isPassword {
+	// 	return c.JSON(http.StatusBadRequest, echo.Map{
+	// 		"errors": errs,
+	// 	})
+	// }
 	//
 	user := schema.User{}
 	username := LoginRequest.PhoneNumber
@@ -45,11 +45,14 @@ func Login(c echo.Context) error {
 	//get user token error
 	user, token, err := services.Login(username, password)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message" : err.Error(),
+		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"user":  user,
 		"token": token,
+		"message": "User login successfull",
 	})
 }
 func HashPassword(password string) (string, error) {
@@ -66,24 +69,34 @@ func RegisterUser(c echo.Context) error {
 	var newUser schema.User
 	err := c.Bind(&newUser)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid request payload")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message" : "Invalid request payload",
+		})
 	}
 	// Kiểm tra xem email đã tồn tại chưa
 	var existingUser schema.User
 	result := db.Where("phone_number = ?", newUser.PhoneNumber).First(&existingUser)
 	if result.RowsAffected > 0 {
-		return c.JSON(http.StatusConflict, "Số điện thoại đã được đăng ký")
+		return c.JSON(http.StatusConflict, echo.Map{
+			"message" : "Phone number is already exists",
+		})
 	}
 	if len(newUser.Password) < 8 {
-		return c.JSON(http.StatusBadRequest, "Mật khẩu cần ít nhất 8 kí tự")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message" : "Password should have at least 8 characters",
+		})
 	}
 	hash, err := HashPassword(newUser.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Lỗi khi mã hóa password")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message" : "Hash password failed", 
+		})
 	}
 	match := CheckPasswordHash(newUser.Password, hash)
 	if !match {
-		return c.JSON(http.StatusBadRequest, "Lỗi khi check password")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message" : "Compare password failed",
+		})
 	}
 	newUser.Password = hash
 	if newUser.RoleID == 0 {
@@ -91,8 +104,12 @@ func RegisterUser(c echo.Context) error {
 	}
 	result = db.Create(&newUser)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, "Lỗi: "+result.Error.Error())
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message" : result.Error.Error(),
+		})
 	}
 
-	return c.JSON(http.StatusOK, "Đăng ký thành công!")
+	return c.JSON(http.StatusOK, echo.Map{
+		"message" : "Register successfull",
+	})
 }

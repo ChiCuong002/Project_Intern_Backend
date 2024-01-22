@@ -26,7 +26,7 @@ func Login(username, password string) (schema.User, string, error) {
 	}
 	//check match password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return schema.User{}, "", fmt.Errorf("Authentication error")
+		return schema.User{}, "", fmt.Errorf("Password is not match")
 	}
 	//create jwt token
 	claims := &helper.JwtCustomClaims{

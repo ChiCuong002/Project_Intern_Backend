@@ -7,8 +7,6 @@ import (
 	service "main/handlers/services/product"
 	"main/schema"
 
-	//"fmt"
-	//"io"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -91,7 +89,7 @@ func AddProduct(c echo.Context) error {
 		Quantity:    productData.Quantity,
 	}
 	//insert product into database
-	err := service.InsertProduct(tx ,product)
+	err := service.InsertProduct(tx, product)
 	if err != nil {
 		tx.Rollback()
 		return c.JSON(http.StatusInternalServerError, "Failed to insert product")
