@@ -18,7 +18,9 @@ func AddCategory(c echo.Context) error {
 	var newCategory schema.Category
 	err := c.Bind(&newCategory)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid request payload")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "không lấy được dữ liệu",
+		})
 	}
 	// Không cần kiểm tra loại đã tồn tại hay không
 
@@ -28,10 +30,15 @@ func AddCategory(c echo.Context) error {
 
 	result := db.Create(&newCategory)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, "Lỗi: "+result.Error.Error())
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": result.Error.Error(),
+		})
 	}
 
-	return c.JSON(http.StatusOK, "Thêm loại sản phẩm thành công!")
+	return c.JSON(http.StatusOK, echo.Map{
+		"category": newCategory,
+		"message":  "Thêm loại sản phẩm thành công!",
+	})
 }
 
 func EditCategory(c echo.Context) error {
@@ -43,19 +50,28 @@ func EditCategory(c echo.Context) error {
 	err := c.Bind(&requestData)
 	if err != nil {
 		//fmt.Println("Error binding request:", err)
-		return c.JSON(http.StatusBadRequest, "lấy loại không được")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "lấy loại không được",
+		})
 	}
 
 	var categoyToUpdate schema.Category
 	result := db.First(&categoyToUpdate, requestData.IDCategory)
 	if result.Error != nil {
-		return c.JSON(http.StatusNotFound, "Không tìm thấy loại sản phẩm")
+		return c.JSON(http.StatusNotFound, echo.Map{
+			"message": "Không tìm thấy loại sản phẩm",
+		})
 	}
 
 	err = categoyToUpdate.ChangeNameCategory(db, requestData.NewNameCategory)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Lỗi thay đổi loại: "+err.Error())
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": "Lỗi thay đổi loại: " + err.Error(),
+		})
 	}
 
-	return c.JSON(http.StatusOK, "Đổi tên loại thành công")
+	return c.JSON(http.StatusOK, echo.Map{
+		"category": requestData,
+		"message":  "Đổi tên loại thành công",
+	})
 }

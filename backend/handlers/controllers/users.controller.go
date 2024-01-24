@@ -17,6 +17,7 @@ const (
 	LIMIT_DEFAULT = 10
 	PAGE_DEFAULT  = 1
 )
+
 //get db
 //var db = storage.GetDB()
 
@@ -80,15 +81,17 @@ func DetailUser(c echo.Context) error {
 func ChangePasswordUsers(c echo.Context) error {
 	db := storage.GetDB()
 	var requestData struct {
-		UserID      uint   `json:"UserID"`
+		UserID          uint   `json:"UserID"`
 		CurrentPassword string `json:"CurrentPassword"`
-		NewPassword string `json:"NewPassword"`
+		NewPassword     string `json:"NewPassword"`
 	}
 
 	err := c.Bind(&requestData)
 	if err != nil {
 		fmt.Println("Error binding request:", err)
-		return c.JSON(http.StatusBadRequest, "lấy người dùng ko đc")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
 	}
 
 	fmt.Println("User ID:", requestData.UserID)
@@ -97,14 +100,22 @@ func ChangePasswordUsers(c echo.Context) error {
 	var userToUpdate schema.User
 	result := db.First(&userToUpdate, requestData.UserID)
 	if result.Error != nil {
-		return c.JSON(http.StatusNotFound, "Không tìm thấy người dùng")
+		return c.JSON(http.StatusNotFound, echo.Map{
+			"message": err.Error(),
+		})
 	}
 
 	// Thay đổi mật khẩu của người dùng
 	err = userToUpdate.ChangePassword(db, requestData.NewPassword, requestData.CurrentPassword)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Lỗi thay đổi mật khẩu: "+err.Error())
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
 	}
 
-	return c.JSON(http.StatusOK, "Thay đổi mật khẩu thành công")
+	return c.JSON(http.StatusOK, echo.Map{
+		"UserID":      requestData.UserID,
+		"NewPassword": requestData.NewPassword,
+		"message":     "Change password succesfull",
+	})
 }

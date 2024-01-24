@@ -48,28 +48,38 @@ func CheckPasswordHash(password, hash string) bool {
 }
 func RegisterUser(c echo.Context) error {
 	// Đọc dữ liệu từ request
-	db := storage.GetDB() 
+	db := storage.GetDB()
 	var newUser schema.User
 	err := c.Bind(&newUser)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid request payload")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "khong lay duoc du lieu",
+		})
 	}
 	// Kiểm tra xem email đã tồn tại chưa
 	var existingUser schema.User
 	result := db.Where("phone_number = ?", newUser.PhoneNumber).First(&existingUser)
 	if result.RowsAffected > 0 {
-		return c.JSON(http.StatusConflict, "Số điện thoại đã được đăng ký")
+		return c.JSON(http.StatusConflict, echo.Map{
+			"message": "Số điện thoại đã được đăng ký",
+		})
 	}
 	if len(newUser.Password) < 8 {
-		return c.JSON(http.StatusBadRequest, "Mật khẩu cần ít nhất 8 kí tự")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Mật khẩu phải trên 8 ký tự",
+		})
 	}
 	hash, err := HashPassword(newUser.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Lỗi khi mã hóa password")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Lỗi khi mã hóa password",
+		})
 	}
 	match := CheckPasswordHash(newUser.Password, hash)
 	if !match {
-		return c.JSON(http.StatusBadRequest, "Lỗi khi check password")
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Lỗi khi check password",
+		})
 	}
 	newUser.Password = hash
 	if newUser.RoleID == 0 {
@@ -77,8 +87,13 @@ func RegisterUser(c echo.Context) error {
 	}
 	result = db.Create(&newUser)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, "Lỗi: "+result.Error.Error())
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": result.Error.Error(),
+		})
 	}
 
-	return c.JSON(http.StatusOK, "Đăng ký thành công!")
+	return c.JSON(http.StatusOK, echo.Map{
+		"user":    newUser,
+		"message": "Register succesfull",
+	})
 }
