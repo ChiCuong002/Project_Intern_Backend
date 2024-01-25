@@ -1,9 +1,11 @@
-package controllers
+package controller
 
 import (
+	//"main/schema"
 	"fmt"
 	storage "main/database"
-	"main/handlers/services"
+	service "main/handlers/services/user"
+	userServices "main/handlers/services/user"
 	helper "main/helper/struct"
 	"main/schema"
 	"net/http"
@@ -15,6 +17,7 @@ import (
 const (
 	LIMIT_DEFAULT = 10
 	PAGE_DEFAULT  = 1
+	SORT_DEFAULT  = " user_id desc"
 )
 
 func sortString(sort string) string {
@@ -43,6 +46,8 @@ func GetAllUser(c echo.Context) error {
 	sort := c.QueryParam("sort")
 	if sort != "" {
 		sort = sortString(sort)
+	} else {
+		sort = SORT_DEFAULT
 	}
 	search := c.QueryParam("search")
 	pagination := helper.Pagination{
@@ -51,7 +56,7 @@ func GetAllUser(c echo.Context) error {
 		Sort:   sort,
 		Search: search,
 	}
-	users, err := services.GetAllUserPagination(pagination)
+	users, err := userServices.GetAllUserPagination(pagination)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err.Error(),
@@ -68,7 +73,7 @@ func DetailUser(c echo.Context) error {
 		})
 	}
 	fmt.Println("id: ", idInt)
-	user, err := services.UserDetail(uint(idInt))
+	user, err := userServices.UserDetail(uint(idInt))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -123,7 +128,7 @@ func BlockUser(c echo.Context) error {
 		})
 	}
 	fmt.Println("id: ", idInt)
-	user, err := services.BlockUser(uint(idInt))
+	user, err := userServices.BlockUser(uint(idInt))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err,
@@ -135,3 +140,23 @@ func BlockUser(c echo.Context) error {
 	})
 }
 
+func UpdateUser(c echo.Context) error {
+	fmt.Println("Updated user")
+	userID := c.Get("userID").(uint)
+	data := helper.UpdateData{}
+	if err := c.Bind(&data); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Error binding data",
+		})
+	}
+	data.UserID = userID
+	err := service.UpdateUser(&data)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "User infomation is updated successfully",
+	})
+}

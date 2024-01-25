@@ -1,19 +1,28 @@
-package services
+package service
 
 import (
 	"errors"
-	//"fmt"
+	"fmt"
 	storage "main/database"
 	"main/helper/scope"
 	helper "main/helper/struct"
 	"main/models"
-
-	//"math"
+	"main/schema"
 
 	"gorm.io/gorm"
-	//"github.com/labstack/echo/v4"
 )
 
+func UpdateUser(userData *helper.UpdateData) error {
+	fmt.Println("service")
+	db := storage.GetDB()
+	result := db.Model(&schema.User{}).Where("user_id = ?", userData.UserID).Updates(
+		map[string]interface{}{"first_name": userData.FirstName, "last_name": userData.LastName,
+			"address": userData.Address, "email": userData.Email})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
 const (
 	ADMIN = 1
 	USER  = 2
@@ -54,6 +63,6 @@ func BlockUser(id uint) (helper.UserResponse, error) {
 	if err != nil {
 		return user, err
 	}
-	db.Model(&user).Update("is_active", !user.IsActive)
+	db.Model(&user).Where("user_id = ?", id).Update("is_active", !user.IsActive)
 	return user, nil
 }

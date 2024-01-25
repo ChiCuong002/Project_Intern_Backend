@@ -5,6 +5,7 @@ import (
 	"fmt"
 	storage "main/database"
 	"main/handlers/services"
+
 	//"main/helper/validation"
 	"main/schema"
 	"net/http"
@@ -46,12 +47,12 @@ func Login(c echo.Context) error {
 	user, token, err := services.Login(username, password)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message" : err.Error(),
+			"message": err.Error(),
 		})
 	}
 	return c.JSON(http.StatusOK, echo.Map{
-		"user":  user,
-		"token": token,
+		"user":    user,
+		"token":   token,
 		"message": "User login successfull",
 	})
 }
@@ -70,7 +71,7 @@ func RegisterUser(c echo.Context) error {
 	err := c.Bind(&newUser)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message" : "Invalid request payload",
+			"message": "Invalid request payload",
 		})
 	}
 	// Kiểm tra xem email đã tồn tại chưa
@@ -78,29 +79,29 @@ func RegisterUser(c echo.Context) error {
 	result := db.Where("phone_number = ?", newUser.PhoneNumber).First(&existingUser)
 	if len(newUser.PhoneNumber) != 10 {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message" : "Phone number is invalid",
+			"message": "Phone number is invalid",
 		})
 	}
 	if result.RowsAffected > 0 {
 		return c.JSON(http.StatusConflict, echo.Map{
-			"message" : "Phone number is already exists",
+			"message": "Phone number is already exists",
 		})
 	}
 	if len(newUser.Password) < 8 {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message" : "Password should have at least 8 characters",
+			"message": "Password should have at least 8 characters",
 		})
 	}
 	hash, err := HashPassword(newUser.Password)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message" : "Hash password failed", 
+			"message": "Hash password failed",
 		})
 	}
 	match := CheckPasswordHash(newUser.Password, hash)
 	if !match {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message" : "Compare password failed",
+			"message": "Compare password failed",
 		})
 	}
 	newUser.Password = hash
@@ -110,11 +111,23 @@ func RegisterUser(c echo.Context) error {
 	result = db.Create(&newUser)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message" : result.Error.Error(),
+			"message": result.Error.Error(),
 		})
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
-		"message" : "Register successfull",
+		"message": "Register successfull",
+	})
+}
+func CategoriesDropDown(c echo.Context) error {
+	categories, err := services.CategoriesDropDown()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message":    "Get all categories successfull",
+		"categories": categories,
 	})
 }

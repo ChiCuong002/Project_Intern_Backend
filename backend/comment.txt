@@ -1,0 +1,62 @@
+// userRoute.InitUserRoute(e)
+	// adminRoute.InitAdminRoute(e)
+	//
+	// jwtConfig := configs.EchoJWTConfig()
+	// corsConfig := configs.CORSConfig()
+
+	// //
+
+	// //echojwt config
+	// // config := echojwt.Config{
+	// // 	NewClaimsFunc: func(c echo.Context) jwt.Claims {
+	// // 		return new(helper.JwtCustomClaims)
+	// // 	},
+	// // 	SigningKey: []byte("secret"),
+	// // }
+	// // //CORS config for all routes
+	// CORSConfig := gomiddleware.CORSWithConfig(gomiddleware.CORSConfig{
+	// 	AllowOrigins: []string{"*"},
+	// 	AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+	// 	AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	// })
+	// //Apply CORS middleware to all routes
+
+	// //e.Use(CORSConfig)
+	// e.Use(corsConfig)
+
+	// //main route
+	// e.GET("/", func(c echo.Context) error {
+	// 	return c.String(http.StatusOK, "Hello, World!")
+	// })
+	// //register route
+	// e.POST("/register", controllers.RegisterUser)
+	// //login route
+	// e.POST("/login", controllers.Login)
+	// //categories drop down
+	// e.GET("/categories-dropdown", controllers.CategoriesDropDown)
+	// //user route
+	// u := e.Group("/api")
+	// u.Use(echojwt.WithConfig(config))
+	// u.Use(middleware.UserAuthentication)
+	// u.GET("", api)
+	// u.POST("/addproduct", productController.AddProduct)
+	// u.PATCH("/update-product/:id", productController.UpdateProduct)
+	// //restricted group
+	// r := e.Group("/restricted")
+
+	// //auth middleware
+	// r.Use(echojwt.WithConfig(config))
+	// r.Use(middleware.AdminAuthentication)
+
+	// //restricted
+
+	// r.GET("", restricted)
+	// //users management
+	// r.GET("/users", controllers.GetAllUser)                    //user list
+	// r.GET("/users/:id", controllers.DetailUser)                //user detail
+	// r.PATCH("/update-profile", userController.UpdateUser)      //admin update admin's infomation
+	// r.POST("/changepassword", controllers.ChangePasswordUsers) //change user's password
+	// r.PATCH("/block/:id", controllers.BlockUser)               //block or unblock user
+	// //categories management
+	// r.GET("/categories", controllers.GetCategories)
+	// r.GET("/category/:id", controllers.DetailCategory)

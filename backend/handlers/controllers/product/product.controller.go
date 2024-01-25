@@ -5,7 +5,8 @@ import (
 	"fmt"
 	storage "main/database"
 	service "main/handlers/services/product"
-	"main/schema"
+	helper "main/helper/struct/product"
+	"strconv"
 
 	"log"
 	"mime/multipart"
@@ -80,21 +81,21 @@ func AddProduct(c echo.Context) error {
 	//begin transaction
 	tx := storage.GetDB().Begin()
 	//create product type
-	product := &schema.Product{
-		UserID:      2,
+	product := &helper.ProductInsert{
+		UserID:      c.Get("userID").(uint),
 		CategoryID:  productData.CategoryID,
 		ProductName: productData.ProductName,
 		Description: productData.Description,
 		Price:       productData.Price,
 		Quantity:    productData.Quantity,
 	}
-	//insert product into database
+	// //insert product into database
 	err := service.InsertProduct(tx, product)
 	if err != nil {
 		tx.Rollback()
 		return c.JSON(http.StatusInternalServerError, "Failed to insert product")
 	}
-	//Get multipart form from the request
+	// //Get multipart form from the request
 	form, err := c.MultipartForm()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, "Invalid form data")
@@ -121,8 +122,7 @@ func AddProduct(c echo.Context) error {
 		//create image path
 		imagePath := getImagePath(bucketKey)
 		//insert the image into database
-		img := &schema.Image{
-			ProductID: product.ProductID,
+		img := &helper.ImageInsert{
 			BucketKey: bucketKey,
 			Path:      imagePath,
 		}
@@ -131,7 +131,16 @@ func AddProduct(c echo.Context) error {
 			tx.Rollback()
 			return c.JSON(http.StatusInternalServerError, "Failed to insert image")
 		}
-		product.Images = append(product.Images, *img)
+		productImg := &helper.ProductImageInsert{
+			ProductID: product.ProductID,
+			ImageID:   img.ImageID,
+		}
+		err = service.InsertProductImage(tx, productImg)
+		if err != nil {
+			tx.Rollback()
+			return c.JSON(http.StatusInternalServerError, "Failed to insert product image")
+		}
+		//product.Images = append(product.Images, *img)
 		// Open the image file
 		src, err := image.Open()
 		if err != nil {
@@ -147,5 +156,50 @@ func AddProduct(c echo.Context) error {
 		}
 	}
 	tx.Commit()
-	return c.JSON(http.StatusOK, product)
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Add product successfully",
+		"product": product,
+	})
+}
+func DetailProduct(c echo.Context) error {
+	productID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Failed to get product id",
+		})
+	}
+	product, err := service.DetailProduct(uint(productID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "success",
+		"product": product,
+	})
+}
+func UpdateProduct(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	product := helper.UpdateProduct{}
+	if err := c.Bind(&product); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	product.ProductID = uint(id)
+	err = service.UpdateProduct(&product)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Update product data successfully",
+	})
 }

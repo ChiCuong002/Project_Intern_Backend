@@ -3,10 +3,12 @@ package storage
 import (
 	"fmt"
 	"log"
+	"main/schema"
 	"os"
+
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"github.com/joho/godotenv"
 )
 var db *gorm.DB
 
@@ -33,4 +35,27 @@ func InitDB() {
 }
 func GetDB() *gorm.DB{
 	return db
+}
+func Migration() {
+	// DropTable("product_images")
+	// DropTable("images")
+	// DropTable("products")
+	db.AutoMigrate(&schema.Role{}, &schema.User{}, &schema.Category{}, &schema.Product{},&schema.ProductImage{}, &schema.Image{}, &schema.Order{})
+}
+func DropColumn(tableName string, columnName string) {
+	err := db.Migrator().DropColumn(tableName, columnName)
+	if err != nil {
+		log.Fatal("Failed to drop column: ", err)
+	} else {
+		fmt.Println("Successfully dropped column")
+	}
+}
+
+func DropTable(tableName string) {
+	err := db.Migrator().DropTable(tableName)
+	if err != nil {
+		log.Fatal("Failed to drop table: ", err)
+	} else {
+		fmt.Println("Successfully dropped table")
+	}
 }
