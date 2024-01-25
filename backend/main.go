@@ -3,6 +3,7 @@ package main
 import (
 	storage "main/database"
 	"main/handlers/controllers"
+	"main/handlers/services"
 	helper "main/helper/struct"
 	"main/middleware"
 	"net/http"
@@ -69,5 +70,7 @@ func main() {
 	r.POST("/changepassword", controllers.ChangePasswordUsers)
 	e.POST("/addcategory", controllers.AddCategory)
 	e.POST("/editcategory", controllers.EditCategory)
+	//thong ke
+	e.POST("/thongke", services.ThongKeTheoThangHandler)
 	e.Logger.Fatal(e.Start(":8080"))
 }
