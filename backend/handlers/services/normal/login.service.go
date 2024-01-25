@@ -42,3 +42,15 @@ func Login(username, password string) (schema.User, string, error) {
 	}
 	return user, t, nil
 }
+func CategoriesDropDown() ([]helper.CategoriesDropDown, error) {
+	db := storage.GetDB()
+	category := []helper.CategoriesDropDown{}
+	result := db.Select("category_id, category_name").Find(&category, schema.Category{IsActive: true})
+	if result.Error != nil {
+		return category, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return category, fmt.Errorf("Can't found any categories")
+	}
+	return category, nil
+}

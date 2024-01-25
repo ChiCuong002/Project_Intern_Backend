@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"fmt"
-	"main/handlers/services"
+	storage "main/database"
+	services "main/handlers/services/category"
 	helper "main/helper/struct"
+	"main/schema"
 	"net/http"
 	"strconv"
 
@@ -74,4 +76,37 @@ func DetailCategory(c echo.Context) error {
 		})
 	}
 	return c.JSON(http.StatusOK, category)
+}
+
+type AddCategoryRequest struct {
+	NameCategory string `json:"category_name"`
+}
+
+func AddCategory(c echo.Context) error {
+	var addCategoryRequest AddCategoryRequest
+	db := storage.GetDB()
+	var newCategory schema.Category
+	err := c.Bind(&newCategory)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "không lấy được dữ liệu",
+		})
+	}
+	// Không cần kiểm tra loại đã tồn tại hay không
+
+	newCategory = schema.Category{
+		CategoryName: addCategoryRequest.NameCategory,
+	}
+
+	result := db.Create(&newCategory)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": result.Error.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"category": newCategory,
+		"message":  "Thêm loại sản phẩm thành công!",
+	})
 }

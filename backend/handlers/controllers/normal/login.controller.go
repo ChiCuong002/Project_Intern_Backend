@@ -4,7 +4,7 @@ import (
 	//"crypto/ecdsa"
 	"fmt"
 	storage "main/database"
-	"main/handlers/services"
+	services "main/handlers/services/normal"
 
 	//"main/helper/validation"
 	"main/schema"
@@ -24,20 +24,7 @@ func Login(c echo.Context) error {
 	if err := c.Bind(&LoginRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid JSON format"})
 	}
-	// //phone number validate
-	// if !validation.IsPhoneNumber(LoginRequest.PhoneNumber) {
-	// 	return c.JSON(http.StatusBadRequest, echo.Map{
-	// 		"error": "Invalid phone number format",
-	// 	})
-	// }
-	// //password validate
-	// isPassword, errs := validation.IsPassword(LoginRequest.Password)
-	// if !isPassword {
-	// 	return c.JSON(http.StatusBadRequest, echo.Map{
-	// 		"errors": errs,
-	// 	})
-	// }
-	//
+
 	user := schema.User{}
 	username := LoginRequest.PhoneNumber
 	password := LoginRequest.Password
