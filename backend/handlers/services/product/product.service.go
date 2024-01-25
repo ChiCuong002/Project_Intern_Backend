@@ -6,6 +6,8 @@ import (
 
 	"fmt"
 	storage "main/database"
+	"main/helper/scope"
+	paginationHelper "main/helper/struct"
 	helper "main/helper/struct/product"
 	productHelper "main/helper/struct/product"
 	"main/schema"
@@ -63,4 +65,33 @@ func DetailProduct(id uint) (productHelper.DetailProductRes, error) {
 		return product, err
 	}
 	return product, nil
+}
+func SearchProducts(query *gorm.DB, search string) *gorm.DB {
+	if search != "" {
+		query = query.Where("product_name like ?", "%"+search+"%")
+	}
+	return query
+
+}
+func GetAllProduct(pagination paginationHelper.Pagination) (*paginationHelper.Pagination, error) {
+	db := storage.GetDB()
+	products := []productHelper.DetailProductRes{}
+	query := db.Model(&products)
+	query = SearchProducts(query, pagination.Search)
+	query = query.Scopes(scope.Paginate(query, &pagination))
+	query.Preload("ProductImages.Image").Find(&products)
+	pagination.Rows = products
+	return &pagination, nil
+}
+func CompareUserID(userID, productID uint) error {
+	db := storage.GetDB()
+	product := schema.Product{}
+	err := db.First(&product, productID).Error
+	if err != nil {
+		return fmt.Errorf("can't find the product. Check product id again")
+	}
+	if userID != product.UserID {
+		return fmt.Errorf("user is not own this product")
+	}
+	return nil
 }

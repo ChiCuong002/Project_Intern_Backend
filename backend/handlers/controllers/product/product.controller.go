@@ -3,15 +3,15 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log"
 	storage "main/database"
 	service "main/handlers/services/product"
+	paginationHelper "main/helper/struct"
 	helper "main/helper/struct/product"
-	"strconv"
-
-	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -180,9 +180,16 @@ func DetailProduct(c echo.Context) error {
 	})
 }
 func UpdateProduct(c echo.Context) error {
+	userID := c.Get("userID").(uint)
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	//compare owner id
+	if err := service.CompareUserID(userID, uint(id)); err != nil {
+		return c.JSON(http.StatusUnauthorized, echo.Map{
 			"message": err.Error(),
 		})
 	}
@@ -202,4 +209,55 @@ func UpdateProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "Update product data successfully",
 	})
+}
+
+const (
+	LIMIT_DEFAULT = 10
+	PAGE_DEFAULT  = 1
+	SORT_DEFAULT  = " product_id desc"
+)
+
+func sortString(sort string) string {
+	order := sort[0]
+	sortString := sort[0:]
+	if rune(order) == '+' {
+		sortString = sortString + " desc"
+	} else if rune(order) == '-' {
+		sortString = sortString + " asc"
+	} else {
+		sortString = ""
+	}
+	fmt.Println("sortString: ", sortString)
+	return sortString
+}
+func GetAllProduct(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		page = PAGE_DEFAULT
+	}
+
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		limit = LIMIT_DEFAULT
+	}
+	sort := c.QueryParam("sort")
+	if sort != "" {
+		sort = sortString(sort)
+	} else {
+		sort = SORT_DEFAULT
+	}
+	search := c.QueryParam("search")
+	pagination := paginationHelper.Pagination{
+		Page:   page,
+		Limit:  limit,
+		Sort:   sort,
+		Search: search,
+	}
+	products, err := service.GetAllProduct(pagination)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, products)
 }

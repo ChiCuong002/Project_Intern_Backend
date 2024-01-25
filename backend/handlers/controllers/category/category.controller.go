@@ -55,7 +55,7 @@ func GetCategories(c echo.Context) error {
 	categories, err := services.GetAllCategories(pagination)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	return c.JSON(http.StatusOK, categories)
@@ -65,7 +65,7 @@ func DetailCategory(c echo.Context) error {
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
 	fmt.Println("idInt: ", idInt)
