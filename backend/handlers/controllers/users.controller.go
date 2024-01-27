@@ -106,7 +106,7 @@ func ChangePasswordUsers(c echo.Context) error {
 	}
 
 	// Thay đổi mật khẩu của người dùng
-	err = userToUpdate.ChangePassword(db, requestData.NewPassword, requestData.CurrentPassword)
+	err = services.ChangePassword(&userToUpdate, db, requestData.NewPassword, requestData.CurrentPassword)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err.Error(),

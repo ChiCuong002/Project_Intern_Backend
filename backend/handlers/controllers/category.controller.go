@@ -2,6 +2,7 @@ package controllers
 
 import (
 	storage "main/database"
+	"main/handlers/services"
 	"main/schema"
 	"net/http"
 
@@ -63,7 +64,7 @@ func EditCategory(c echo.Context) error {
 		})
 	}
 
-	err = categoyToUpdate.ChangeNameCategory(db, requestData.NewNameCategory)
+	err = services.ChangeNameCategory(&categoyToUpdate, db, requestData.NewNameCategory)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "Lỗi thay đổi loại: " + err.Error(),

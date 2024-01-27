@@ -1,10 +1,8 @@
 package schema
 
 import (
-	"fmt"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -57,40 +55,6 @@ type Order struct {
 	OrderStatus string
 }
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-func (u *User) ChangePassword(db *gorm.DB, newPassword, currentPassword string) error {
-	hashNewPass, err := HashPassword(newPassword)
-	fmt.Println("user: ", u)
-	if err != nil {
-		panic("ma hoa that bai")
-	}
-	match := CheckPasswordHash(currentPassword, u.Password)
-	if !match {
-		panic("mk ma hoa khong trung")
-	}
-	// Cập nhật mật khẩu người dùng trong cơ sở dữ liệu
-	result := db.Model(u).Update("password", hashNewPass)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
-}
-func (c *Category) ChangeNameCategory(db *gorm.DB, newName string) error {
-	result := db.Model(c).Update("category_name", newName)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
-}
 func Migration() {
 	dsn := "host=localhost user=postgres password=sa dbname=fitness-api port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
