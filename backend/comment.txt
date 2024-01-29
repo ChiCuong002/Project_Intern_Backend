@@ -1,0 +1,14 @@
+	// //phone number validate
+	// if !validation.IsPhoneNumber(LoginRequest.PhoneNumber) {
+	// 	return c.JSON(http.StatusBadRequest, echo.Map{
+	// 		"error": "Invalid phone number format",
+	// 	})
+	// }
+	// //password validate
+	// isPassword, errs := validation.IsPassword(LoginRequest.Password)
+	// if !isPassword {
+	// 	return c.JSON(http.StatusBadRequest, echo.Map{
+	// 		"errors": errs,
+	// 	})
+	// }
+	//
