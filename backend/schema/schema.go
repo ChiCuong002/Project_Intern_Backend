@@ -26,6 +26,8 @@ type User struct {
 	IsActive    bool      `json:"is_active" gorm:"default:true"`
 	Products    []Product `json:"products" gorm:"foreignKey:UserID"`
 	Orders      []Order   `json:"orders" gorm:"foreignKey:UserID"`
+	ImageID     uint      `gorm:"foreignKey:ImageID"`
+	Image       Image
 }
 type Category struct {
 	CategoryID   uint `gorm:"primaryKey;autoIncrement"`
@@ -33,15 +35,20 @@ type Category struct {
 	IsActive     bool      `gorm:"default:true"`
 	Products     []Product `gorm:"foreignKey:CategoryID"`
 }
+type Status struct {
+	StatusID uint `gorm:"primaryKey;autoIncrement"`
+	Status   string
+	Products []Product `gorm:"foreignKey:StatusID"`
+}
 type Product struct {
 	ProductID   uint           `json:"product_id" form:"product_id" gorm:"primaryKey;autoIncrement"`
 	UserID      uint           `json:"user_id" form:"user_id"`
 	CategoryID  uint           `json:"category_id" form:"category_id"`
+	StatusID    uint           `json:"status_id"`
 	ProductName string         `json:"product_name" form:"product_name"`
 	Description string         `json:"description" form:"description"`
 	Price       float64        `json:"price" form:"price"`
 	Quantity    uint           `json:"quantity" form:"quantity"`
-	ImagePath   string         `json:"image" form:"image"`
 	Images      []ProductImage `gorm:"foreignKey:ProductID"`
 	Orders      []Order        `gorm:"foreignKey:ProductID"`
 }

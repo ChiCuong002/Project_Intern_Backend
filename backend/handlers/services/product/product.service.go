@@ -15,7 +15,10 @@ import (
 	"gorm.io/gorm"
 )
 
+const DEFAULT_STATUS = 1
+
 func InsertProduct(tx *gorm.DB, product *helper.ProductInsert) error {
+	product.StatusID = DEFAULT_STATUS
 	result := tx.Create(product)
 	if result.Error != nil {
 		return result.Error

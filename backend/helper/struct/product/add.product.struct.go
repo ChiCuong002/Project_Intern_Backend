@@ -4,6 +4,7 @@ type ProductInsert struct {
 	ProductID   uint `gorm:"primaryKey;autoIncrement"`
 	UserID      uint
 	CategoryID  uint
+	StatusID    uint
 	ProductName string
 	Description string
 	Price       float64
@@ -31,7 +32,6 @@ func (ProductImageInsert) TableName() string {
 func (ImageInsert) TableName() string {
 	return "images"
 }
-
 
 type UpdateProduct struct {
 	ProductID   uint    `json:"-"`

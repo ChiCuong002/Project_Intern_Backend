@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	storage "main/database"
 	"main/helper/scope"
@@ -12,17 +11,37 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateUser(userData *helper.UpdateData) error {
+const ZERO_VALUE_INT = 0
+
+func UpdateUser(tx *gorm.DB, userData *helper.UserInsert) error {
 	fmt.Println("service")
-	db := storage.GetDB()
-	result := db.Model(&schema.User{}).Where("user_id = ?", userData.UserID).Updates(
-		map[string]interface{}{"first_name": userData.FirstName, "last_name": userData.LastName,
-			"address": userData.Address, "email": userData.Email})
+	updateData := map[string]interface{}{
+		"first_name": userData.FirstName,
+		"last_name":  userData.LastName,
+		"address":    userData.Address,
+		"email":      userData.Email,
+		"image_id": userData.Image,
+	}
+	switch {
+	case userData.FirstName != "":
+		updateData["first_name"] = userData.FirstName
+	case userData.LastName != "":
+		updateData["last_name"] = userData.LastName
+	case userData.Address != "":
+		updateData["address"] = userData.Address
+	case userData.Email != "":
+		updateData["email"] = userData.Email
+	case userData.Image != ZERO_VALUE_INT:
+		updateData["image_id"] = userData.Image
+	}
+	fmt.Println("updateData: ", updateData)
+	result := tx.Model(&schema.User{}).Where("user_id = ?", userData.UserID).Updates(updateData)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
+
 const (
 	ADMIN = 1
 	USER  = 2
@@ -49,11 +68,12 @@ func GetAllUserPagination(pagination helper.Pagination) (*helper.Pagination, err
 }
 func UserDetail(id uint) (helper.UserResponse, error) {
 	var db *gorm.DB = storage.GetDB()
-	user := helper.UserResponse{}
-	err := db.First(&user, id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	fmt.Println("id: ", id)
+	var user helper.UserResponse
+	result := db.Model(&user).Preload("Image").First(&user, "user_id = ?", id)
+	if result.Error != nil {
 		//SELECT * FROM users WHERE id = 10;
-		return user, err
+		return user, fmt.Errorf("Failed to get user")
 	}
 	return user, nil
 }

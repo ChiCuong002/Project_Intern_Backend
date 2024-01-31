@@ -3,21 +3,28 @@ package controller
 import (
 	//"main/schema"
 	"fmt"
+	"log"
 	storage "main/database"
+	imageServices "main/handlers/services/image"
 	service "main/handlers/services/user"
 	userServices "main/handlers/services/user"
+	"main/helper/aws"
 	helper "main/helper/struct"
+	imageHelper "main/helper/struct/product"
 	"main/schema"
 	"net/http"
+	"os"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 const (
-	LIMIT_DEFAULT = 10
-	PAGE_DEFAULT  = 1
-	SORT_DEFAULT  = " user_id desc"
+	LIMIT_DEFAULT       = 10
+	PAGE_DEFAULT        = 1
+	SORT_DEFAULT        = " user_id desc"
+	DEFAULT_IMAGE_VALUE = 1
 )
 
 func sortString(sort string) string {
@@ -142,20 +149,120 @@ func BlockUser(c echo.Context) error {
 
 func UpdateUser(c echo.Context) error {
 	fmt.Println("Updated user")
+	var imageID uint
+	user := helper.UserInsert{}
 	userID := c.Get("userID").(uint)
 	data := helper.UpdateData{}
-	if err := c.Bind(&data); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message": "Error binding data",
-		})
-	}
-	data.UserID = userID
-	err := service.UpdateUser(&data)
+	c.Bind(&data)
+	// if err := c.Bind(&data); err != nil {
+	// 	return c.JSON(http.StatusBadRequest, echo.Map{
+	// 		"message": "Error binding data",
+	// 	})
+	// }
+	// //Get multipart form from the request
+	form, err := c.MultipartForm()
 	if err != nil {
+		return c.JSON(http.StatusBadRequest, "Invalid form data")
+	}
+	// Get the image files from the form
+	image, ok := form.File["image"]
+	//begin transaction
+	tx := storage.GetDB().Begin()
+	if ok && len(image) > 0 {
+		userByID, err := service.UserDetail(userID)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err.Error())
+		}
+		//load aws service
+		awsService, err := aws.ConfigureAWSService()
+		// Generate a unique key for the S3 bucket
+		bucketKey := uuid.New().String()
+		// Open the image file
+		src, err := image[0].Open()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err)
+		}
+		defer src.Close()
+		//create image path
+		imagePath := aws.GetImagePath(bucketKey)
+		//didn't have image (default image)
+		if userByID.Image.ImageID == DEFAULT_IMAGE_VALUE {
+			fmt.Println("default image")
+			// Upload the image to AWS
+			err = awsService.UploadFile(os.Getenv("BUCKETNAME"), bucketKey, src)
+			if err != nil {
+				log.Println("Failed to upload the image:", err)
+				return c.JSON(http.StatusInternalServerError, echo.Map{
+					"message": err.Error(),
+				})
+			} else {
+				log.Println("Image uploaded successfully")
+			}
+			//insert the image into database
+			img := &imageHelper.ImageInsert{
+				BucketKey: bucketKey,
+				Path:      imagePath,
+			}
+			err = imageServices.InsertImage(tx, img)
+			if err != nil {
+				tx.Rollback()
+				return c.JSON(http.StatusInternalServerError, "Failed to insert image")
+			}
+			imageID = img.ImageID
+			fmt.Println("img: ", img)
+			fmt.Println("imageID: ", imageID)
+			user = helper.UserInsert{
+				UserID:    userID,
+				FirstName: data.FirstName,
+				LastName:  data.LastName,
+				Address:   data.Address,
+				Email:     data.Email,
+				Image:     imageID,
+			}
+			fmt.Println("user: ", user)
+		//already have an image
+		} else if imageID := userByID.Image.ImageID; imageID != DEFAULT_IMAGE_VALUE {
+			fmt.Println("have images")
+			image, err := imageServices.GetImageByID(imageID)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, err.Error())
+			}
+			//image.Path = imagePath
+			//update image in database
+			err = imageServices.UpdateImage(tx, &image)
+			if err != nil {
+				tx.Rollback()
+				return c.JSON(http.StatusInternalServerError, "Failed to update image")
+			}
+			//update image in cloud
+			err = awsService.UpdateFile(os.Getenv("BUCKETNAME"), image.BucketKey, src)
+			if err != nil {
+				log.Println("Failed to upload the image:", err)
+				return c.JSON(http.StatusInternalServerError, echo.Map{
+					"message": err.Error(),
+				})
+			} else {
+				log.Println("Image uploaded successfully")
+			}
+		}
+	} else {
+		user = helper.UserInsert{
+			UserID:    userID,
+			FirstName: data.FirstName,
+			LastName:  data.LastName,
+			Address:   data.Address,
+			Email:     data.Email,
+		}
+	}
+	err = service.UpdateUser(tx, &user)
+	if err != nil {
+		tx.Rollback()
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err.Error(),
 		})
 	}
+	//commit transaction
+	tx.Commit()
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "User infomation is updated successfully",
 	})

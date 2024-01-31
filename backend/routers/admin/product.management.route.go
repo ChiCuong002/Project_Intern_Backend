@@ -7,5 +7,8 @@ import (
 )
 
 func ProductManagementRoutes(router *echo.Group) {
+	//all products
 	router.GET("/products", controllers.GetAllProduct)
+	//
+	router.POST("/active/:id", controllers.DetailProduct)
 }

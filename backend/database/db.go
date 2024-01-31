@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
 var db *gorm.DB
 
 func InitDB() {
@@ -23,26 +24,23 @@ func InitDB() {
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 
-	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", dbHost, dbUser, dbPass, dbName, dbPort )
+	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", dbHost, dbUser, dbPass, dbName, dbPort)
 
 	db, err = gorm.Open(postgres.Open(connStr), &gorm.Config{})
-	
+
 	if err != nil {
 		log.Fatal("failed to connect database")
 	}
-	
+
 	fmt.Println("Successfully connected to database")
 }
-func GetDB() *gorm.DB{
+func GetDB() *gorm.DB {
 	return db
 }
 func Migration() {
-	// DropTable("product_images")
-	// DropTable("images")
-	// DropTable("products")
-	db.AutoMigrate(&schema.Role{}, &schema.User{}, &schema.Category{}, &schema.Product{},&schema.ProductImage{}, &schema.Image{}, &schema.Order{})
+	db.AutoMigrate(&schema.Role{}, &schema.User{}, &schema.Category{}, &schema.Status{}, &schema.Product{}, &schema.ProductImage{}, &schema.Image{}, &schema.Order{})
 }
-func DropColumn(tableName string, columnName string) {
+func DropColumns(tableName string, columnName string) {
 	err := db.Migrator().DropColumn(tableName, columnName)
 	if err != nil {
 		log.Fatal("Failed to drop column: ", err)
