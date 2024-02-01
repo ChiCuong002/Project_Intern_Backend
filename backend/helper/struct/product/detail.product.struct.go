@@ -8,9 +8,14 @@ type DetailProductRes struct {
 	Description   string         `json:"description"`
 	Price         float64        `json:"price"`
 	Quantity      uint           `json:"quantity"`
+	StatusID      uint           `json:"-" gorm:"foreignKey:StatusID"`
+	Status        Status         `json:"status"`
 	ProductImages []ProductImage `json:"product_images" gorm:"foreignKey:ProductID"`
 }
-
+type Status struct {
+	StatusID uint   `json:"status_id" gorm:"primaryKey;autoIncrement"`
+	Status   string `json:"status"`
+}
 type ProductImage struct {
 	ProductImageID uint  `json:"product_image_id" gorm:"primaryKey;autoIncrement"`
 	ProductID      uint  `json:"product_id"`

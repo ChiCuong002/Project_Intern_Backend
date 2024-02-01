@@ -5,7 +5,6 @@ import (
 	storage "main/database"
 	"main/helper/scope"
 	helper "main/helper/struct"
-	"main/schema"
 
 	"gorm.io/gorm"
 )
@@ -27,9 +26,9 @@ func GetAllCategories(pagination helper.Pagination) (*helper.Pagination, error) 
 	pagination.Rows = categories
 	return &pagination, nil
 }
-func GetDetailCategory(id uint) (schema.Category, error) {
+func GetDetailCategory(id uint) (helper.Categories, error) {
 	var db *gorm.DB = storage.GetDB()
-	category := schema.Category{}
+	category := helper.Categories{}
 	err := db.First(&category, id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return category, err

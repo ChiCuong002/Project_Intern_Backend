@@ -95,6 +95,9 @@ func RegisterUser(c echo.Context) error {
 	if newUser.RoleID == 0 {
 		newUser.RoleID = 2
 	}
+	//default image
+	newUser.ImageID = 1
+	//
 	result = db.Create(&newUser)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{

@@ -268,3 +268,13 @@ func GetAllProduct(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, products)
 }
+func BlockProduct(c echo.Context) error {
+	//productID
+	_, err := strconv.Atoi(c.Param(":id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Failed to get product id",
+		})
+	}
+	return nil
+}

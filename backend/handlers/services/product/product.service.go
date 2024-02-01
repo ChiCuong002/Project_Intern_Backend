@@ -15,10 +15,13 @@ import (
 	"gorm.io/gorm"
 )
 
-const DEFAULT_STATUS = 1
+const (
+	STATUS_ACTIVE   = 1
+	STATUS_INACTIVE = 2
+)
 
 func InsertProduct(tx *gorm.DB, product *helper.ProductInsert) error {
-	product.StatusID = DEFAULT_STATUS
+	product.StatusID = STATUS_ACTIVE
 	result := tx.Create(product)
 	if result.Error != nil {
 		return result.Error
@@ -63,7 +66,7 @@ func UpdateProduct(product *helper.UpdateProduct) error {
 func DetailProduct(id uint) (productHelper.DetailProductRes, error) {
 	db := storage.GetDB()
 	product := productHelper.DetailProductRes{}
-	err := db.Model(&productHelper.DetailProductRes{}).Preload("ProductImages.Image").First(&product, id).Error
+	err := db.Model(&productHelper.DetailProductRes{}).Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").First(&product, id).Error
 	if err != nil {
 		return product, err
 	}
@@ -82,7 +85,7 @@ func GetAllProduct(pagination paginationHelper.Pagination) (*paginationHelper.Pa
 	query := db.Model(&products)
 	query = SearchProducts(query, pagination.Search)
 	query = query.Scopes(scope.Paginate(query, &pagination))
-	query.Preload("ProductImages.Image").Preload("User").Preload("Category").Find(&products)
+	query.Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").Find(&products)
 	pagination.Rows = products
 	return &pagination, nil
 }
@@ -96,5 +99,16 @@ func CompareUserID(userID, productID uint) error {
 	if userID != product.UserID {
 		return fmt.Errorf("user is not own this product")
 	}
+	return nil
+}
+
+func BlockProduct(id uint) error {
+	db := storage.GetDB()
+	product := helper.DetailProductRes{}
+	result := db.Model(&product).First(&product, id)
+	if result.Error != nil {
+		return fmt.Errorf("Falied to get product")
+	}
+	
 	return nil
 }

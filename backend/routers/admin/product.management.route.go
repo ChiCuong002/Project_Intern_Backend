@@ -9,6 +9,8 @@ import (
 func ProductManagementRoutes(router *echo.Group) {
 	//all products
 	router.GET("/products", controllers.GetAllProduct)
-	//
-	router.POST("/active/:id", controllers.DetailProduct)
+	//detail product
+	router.GET("/product/:id", controllers.DetailProduct)
+	//block product
+	router.PATCH("/block-product/:id", controllers.DetailProduct)
 }

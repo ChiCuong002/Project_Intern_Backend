@@ -154,11 +154,6 @@ func UpdateUser(c echo.Context) error {
 	userID := c.Get("userID").(uint)
 	data := helper.UpdateData{}
 	c.Bind(&data)
-	// if err := c.Bind(&data); err != nil {
-	// 	return c.JSON(http.StatusBadRequest, echo.Map{
-	// 		"message": "Error binding data",
-	// 	})
-	// }
 	// //Get multipart form from the request
 	form, err := c.MultipartForm()
 	if err != nil {

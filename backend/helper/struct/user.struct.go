@@ -32,7 +32,7 @@ type UserResponse struct {
 	Email       string `json:"email"`
 	PhoneNumber string `json:"phone_number"`
 	IsActive    bool   `json:"is_active"`
-	ImageID     uint   `json:"image_id" gorm:"foreignKey:ImageID"`
+	ImageID     uint   `json:"-" gorm:"foreignKey:ImageID"`
 	Image       *Image `json:"image"`
 }
 type Image struct {
