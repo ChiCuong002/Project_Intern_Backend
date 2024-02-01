@@ -23,11 +23,12 @@ type User struct {
 	Email       string    `json:"email" form:"Email"`
 	PhoneNumber string    `json:"phone_number" form:"PhoneNumber"`
 	Password    string    `json:"password" form:"Password"`
+	Balance     float64   `json:"balance" gorm:"default:10000"`
 	IsActive    bool      `json:"is_active" gorm:"default:true"`
 	Products    []Product `json:"products" gorm:"foreignKey:UserID"`
 	Orders      []Order   `json:"orders" gorm:"foreignKey:UserID"`
-	ImageID     uint      `gorm:"foreignKey:ImageID"`
-	Image       Image
+	ImageID     uint      `json:"-" gorm:"foreignKey:ImageID"`
+	Image       Image     `json:"image"`
 }
 type Category struct {
 	CategoryID   uint `gorm:"primaryKey;autoIncrement"`

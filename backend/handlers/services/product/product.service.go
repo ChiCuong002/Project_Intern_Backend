@@ -105,10 +105,38 @@ func CompareUserID(userID, productID uint) error {
 func BlockProduct(id uint) error {
 	db := storage.GetDB()
 	product := helper.DetailProductRes{}
-	result := db.Model(&product).First(&product, id)
+	result := db.Model(&product).First(&product, "product_id = ?", id)
 	if result.Error != nil {
 		return fmt.Errorf("Falied to get product")
 	}
-	
+	if product.StatusID != STATUS_ACTIVE {
+		return fmt.Errorf("This product is currently inactive")
+	}
+	product.StatusID = STATUS_INACTIVE
+	result = db.Model(&product).Where("product_id", product.ProductID).Update("status_id", product.StatusID)
+	if result.Error != nil {
+		return fmt.Errorf(result.Error.Error())
+	}
+	return nil
+}
+
+func UnblockProduct(id uint) error {
+	db := storage.GetDB()
+	product := helper.DetailProductRes{}
+	result := db.Model(&product).First(&product, "product_id = ?", id)
+	if result.Error != nil {
+		return fmt.Errorf("Falied to get product. %s", result.Error.Error())
+	}
+	if product.StatusID != STATUS_INACTIVE {
+		return fmt.Errorf("This product is currently active")
+	}
+	product.StatusID = STATUS_ACTIVE
+	result = db.Model(&product).Where("product_id", product.ProductID).Update("status_id", product.StatusID)
+	if result.Error != nil {
+		return fmt.Errorf(result.Error.Error())
+	}
+	return nil
+}
+func MyProduct() error {
 	return nil
 }

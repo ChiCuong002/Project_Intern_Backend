@@ -44,3 +44,11 @@ type Image struct {
 func (UserResponse) TableName() string {
 	return "users"
 }
+
+type AddBalanceReq struct {
+	UserID      uint    `json:"user_id"`
+	AmountToAdd float64 `json:"amount"`
+}
+type Gif struct {
+	Amount float64 `json:"amount"`
+}

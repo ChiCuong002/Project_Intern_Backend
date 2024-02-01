@@ -12,4 +12,6 @@ func UserManagementRouters(router *echo.Group) {
 	router.PATCH("/update-profile", controllers.UpdateUser)         //admin update admin's infomation
 	router.POST("/changepassword", controllers.ChangePasswordUsers) //change user's password
 	router.PATCH("/block/:id", controllers.BlockUser)               //block or unblock user
+	router.PATCH("/add-balance", controllers.AddBalanceByID)        //add balance for user
+	router.PATCH("/add-all-balance", controllers.AddBalanceAllUser) //add balance for all user
 }

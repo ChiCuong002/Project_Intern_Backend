@@ -215,7 +215,7 @@ func UpdateUser(c echo.Context) error {
 				Image:     imageID,
 			}
 			fmt.Println("user: ", user)
-		//already have an image
+			//already have an image
 		} else if imageID := userByID.Image.ImageID; imageID != DEFAULT_IMAGE_VALUE {
 			fmt.Println("have images")
 			image, err := imageServices.GetImageByID(imageID)
@@ -262,3 +262,72 @@ func UpdateUser(c echo.Context) error {
 		"message": "User infomation is updated successfully",
 	})
 }
+func AddBalanceByID(c echo.Context) error {
+	addBalanceReq := helper.AddBalanceReq{}
+	if err := c.Bind(&addBalanceReq); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	err := service.AddBalanceByID(addBalanceReq)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Add balance successfully",
+	})
+}
+func AddBalanceAllUser(c echo.Context) error {
+	req := helper.Gif{}
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	//begin transaction
+	tx := storage.GetDB().Begin()
+	err := service.AddBalanceAllUser(tx, req)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Add balance for all user successfully",
+	})
+}
+// func MyProduct(c echo.Context) error {
+// 	userID := c.Get("userID").(uint)
+// 	page, err := strconv.Atoi(c.QueryParam("page"))
+// 	if err != nil {
+// 		page = PAGE_DEFAULT
+// 	}
+
+// 	limit, err := strconv.Atoi(c.QueryParam("limit"))
+// 	if err != nil {
+// 		limit = LIMIT_DEFAULT
+// 	}
+// 	sort := c.QueryParam("sort")
+// 	if sort != "" {
+// 		sort = sortString(sort)
+// 	} else {
+// 		sort = SORT_DEFAULT
+// 	}
+// 	search := c.QueryParam("search")
+// 	pagination := paginationHelper.Pagination{
+// 		Page:   page,
+// 		Limit:  limit,
+// 		Sort:   sort,
+// 		Search: search,
+// 	}
+// 	products, err := service.GetAllProduct(pagination)
+// 	if err != nil {
+// 		return c.JSON(http.StatusInternalServerError, echo.Map{
+// 			"error": err.Error(),
+// 		})
+// 	}
+// 	return c.JSON(http.StatusOK, products)
+// 	return nil
+// }

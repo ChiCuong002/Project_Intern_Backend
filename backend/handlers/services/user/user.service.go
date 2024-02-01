@@ -20,7 +20,7 @@ func UpdateUser(tx *gorm.DB, userData *helper.UserInsert) error {
 		"last_name":  userData.LastName,
 		"address":    userData.Address,
 		"email":      userData.Email,
-		"image_id": userData.Image,
+		"image_id":   userData.Image,
 	}
 	switch {
 	case userData.FirstName != "":
@@ -85,4 +85,43 @@ func BlockUser(id uint) (helper.UserResponse, error) {
 	}
 	db.Model(&user).Where("user_id = ?", id).Update("is_active", !user.IsActive)
 	return user, nil
+}
+func AddBalanceByID(req helper.AddBalanceReq) error {
+	db := storage.GetDB()
+	user := schema.User{}
+	result := db.Model(&user).First(&user, "user_id = ?", req.UserID)
+	if result.Error != nil {
+		return fmt.Errorf(result.Error.Error())
+	}
+	//update balance
+	balance := user.Balance + req.AmountToAdd
+	//update in db
+	result = db.Model(&user).Where("user_id = ?", user.UserID).Update("balance", balance)
+	if result.Error != nil {
+		return fmt.Errorf(result.Error.Error())
+	}
+	return nil
+}
+func AddBalanceAllUser(tx *gorm.DB, req helper.Gif) error {
+	users := []schema.User{}
+	result := tx.Find(&users)
+	if result.Error != nil {
+		return fmt.Errorf(result.Error.Error())
+	}
+	for _, user := range users {
+		// Update balance
+		balance := user.Balance + req.Amount
+		// Update in db
+		result = tx.Model(&user).Where("user_id = ?", user.UserID).Update("balance", balance)
+		if result.Error != nil {
+			// Rollback transaction if there is an error
+			tx.Rollback()
+			return fmt.Errorf(result.Error.Error())
+		}
+	}
+
+	// Commit transaction
+	tx.Commit()
+
+	return nil
 }

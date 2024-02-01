@@ -269,12 +269,36 @@ func GetAllProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, products)
 }
 func BlockProduct(c echo.Context) error {
-	//productID
-	_, err := strconv.Atoi(c.Param(":id"))
+	productID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Failed to get product id. " + err.Error(),
+		})
+	}
+	err = service.BlockProduct(uint(productID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Block product successfully",
+	})
+}
+func UnblockProduct(c echo.Context) error {
+	productID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": "Failed to get product id",
 		})
 	}
-	return nil
+	err = service.UnblockProduct(uint(productID))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Unblock product successfully",
+	})
 }
