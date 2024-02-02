@@ -298,6 +298,7 @@ func AddBalanceAllUser(c echo.Context) error {
 		"message": "Add balance for all user successfully",
 	})
 }
+
 // func MyProduct(c echo.Context) error {
 // 	userID := c.Get("userID").(uint)
 // 	page, err := strconv.Atoi(c.QueryParam("page"))

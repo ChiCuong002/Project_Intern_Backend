@@ -15,25 +15,24 @@ const ZERO_VALUE_INT = 0
 
 func UpdateUser(tx *gorm.DB, userData *helper.UserInsert) error {
 	fmt.Println("service")
-	updateData := map[string]interface{}{
-		"first_name": userData.FirstName,
-		"last_name":  userData.LastName,
-		"address":    userData.Address,
-		"email":      userData.Email,
-		"image_id":   userData.Image,
-	}
-	switch {
-	case userData.FirstName != "":
+	updateData := make(map[string]interface{})
+
+	if userData.FirstName != "" {
 		updateData["first_name"] = userData.FirstName
-	case userData.LastName != "":
+	}
+	if userData.LastName != "" {
 		updateData["last_name"] = userData.LastName
-	case userData.Address != "":
+	}
+	if userData.Address != "" {
 		updateData["address"] = userData.Address
-	case userData.Email != "":
+	}
+	if userData.Email != "" {
 		updateData["email"] = userData.Email
-	case userData.Image != ZERO_VALUE_INT:
+	}
+	if userData.Image != ZERO_VALUE_INT {
 		updateData["image_id"] = userData.Image
 	}
+
 	fmt.Println("updateData: ", updateData)
 	result := tx.Model(&schema.User{}).Where("user_id = ?", userData.UserID).Updates(updateData)
 	if result.Error != nil {
