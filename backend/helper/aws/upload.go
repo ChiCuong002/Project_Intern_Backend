@@ -7,6 +7,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -46,7 +48,8 @@ func (awsSvc awsService) UploadFile(bucketName, bucketKey string, file multipart
 	return err
 }
 func GetImagePath(bucketKey string) string {
-	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", os.Getenv("BUCKETNAME"), os.Getenv("REGION"), bucketKey)
+	cacheBuster := time.Now().Unix()
+	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s?cb=%s", os.Getenv("BUCKETNAME"), os.Getenv("REGION"), bucketKey, strconv.FormatInt(cacheBuster, 10))
 }
 func ConfigureAWSService() (awsService, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(os.Getenv("REGION")),
