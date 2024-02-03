@@ -222,7 +222,8 @@ func UpdateUser(c echo.Context) error {
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, err.Error())
 			}
-			//image.Path = imagePath
+			//update the image path with cache
+			image.Path = imagePath
 			//update image in database
 			err = imageServices.UpdateImage(tx, &image)
 			if err != nil {
