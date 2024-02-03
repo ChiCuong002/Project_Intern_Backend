@@ -7,8 +7,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -37,10 +35,11 @@ func (awsSvc awsService) UploadFile(bucketName, bucketKey string, file multipart
 	file.Seek(0, 0)
 
 	_, err = awsSvc.S3Client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:      aws.String(bucketName),
-		Key:         aws.String(bucketKey),
-		Body:        file,
-		ContentType: aws.String(contentType),
+		Bucket:       aws.String(bucketName),
+		Key:          aws.String(bucketKey),
+		Body:         file,
+		ContentType:  aws.String(contentType),
+		CacheControl: aws.String("no-cache, no-store, must-revalidate"), // Add this line
 	})
 	if err != nil {
 		log.Println("Error while uploading the file ", err)
@@ -48,8 +47,7 @@ func (awsSvc awsService) UploadFile(bucketName, bucketKey string, file multipart
 	return err
 }
 func GetImagePath(bucketKey string) string {
-	cacheBuster := time.Now().Unix()
-	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s?cb=%s", os.Getenv("BUCKETNAME"), os.Getenv("REGION"), bucketKey, strconv.FormatInt(cacheBuster, 10))
+	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", os.Getenv("BUCKETNAME"), os.Getenv("REGION"), bucketKey)
 }
 func ConfigureAWSService() (awsService, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(os.Getenv("REGION")),
@@ -80,11 +78,13 @@ func (awsSvc awsService) UpdateFile(bucketName, bucketKey string, file multipart
 
 	// Upload the new file to S3 with the same key
 	_, err = awsSvc.S3Client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket:      aws.String(bucketName),
-		Key:         aws.String(bucketKey),
-		Body:        file,
-		ContentType: aws.String(contentType),
+		Bucket:       aws.String(bucketName),
+		Key:          aws.String(bucketKey),
+		Body:         file,
+		ContentType:  aws.String(contentType),
+		CacheControl: aws.String("no-cache, no-store, must-revalidate"), // Add this line
 	})
+
 	if err != nil {
 		log.Println("Error while updating the file ", err)
 	}
