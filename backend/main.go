@@ -72,5 +72,7 @@ func main() {
 	e.POST("/editcategory", controllers.EditCategory)
 	//thong ke
 	e.POST("/thongke", services.ThongKeTheoThangHandler)
+	//update san pham
+	e.POST("/updateproduct", services.ChangeProduct)
 	e.Logger.Fatal(e.Start(":8080"))
 }
