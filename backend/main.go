@@ -76,5 +76,6 @@ func main() {
 	e.POST("/thongke", services.ThongKeTheoThangHandler)
 	//update san pham
 	e.POST("/updateproduct", services.ChangeProduct)
+	e.POST("/putorder", controllers.PurchaseProductController(storage.GetDB()))
 	e.Logger.Fatal(e.Start(":8080"))
 }
