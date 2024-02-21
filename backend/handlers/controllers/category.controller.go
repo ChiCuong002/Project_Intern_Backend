@@ -15,17 +15,14 @@ type AddCategoryRequest struct {
 
 func AddCategory(c echo.Context) error {
 	var addCategoryRequest AddCategoryRequest
-	db := storage.GetDB()
-	var newCategory schema.Category
-	err := c.Bind(&newCategory)
-	if err != nil {
+	if err := c.Bind(&addCategoryRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message": "không lấy được dữ liệu",
+			"message": "Không lấy được dữ liệu",
 		})
 	}
-	// Không cần kiểm tra loại đã tồn tại hay không
 
-	newCategory = schema.Category{
+	db := storage.GetDB()
+	newCategory := schema.Category{
 		CategoryName: addCategoryRequest.NameCategory,
 	}
 
@@ -38,7 +35,7 @@ func AddCategory(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"category": newCategory,
-		"message":  "Thêm loại sản phẩm thành công!",
+		"message":  "Thêm loại sản phẩm thành công!",
 	})
 }
 

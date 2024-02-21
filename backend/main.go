@@ -6,6 +6,7 @@ import (
 	"main/handlers/services"
 	helper "main/helper/struct"
 	"main/middleware"
+	"main/schema"
 	"net/http"
 
 	//"main/schema"
@@ -30,6 +31,7 @@ func main() {
 	e := echo.New()
 	e.Use(gomiddleware.Logger())
 	storage.InitDB()
+	schema.Migration()
 	//CORS config for all routes
 	CORSConfig := gomiddleware.CORSWithConfig(gomiddleware.CORSConfig{
 		AllowOrigins: []string{"*"},
