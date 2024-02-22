@@ -5,6 +5,7 @@ import (
 	storage "main/database"
 	"main/helper/scope"
 	helper "main/helper/struct"
+	"main/schema"
 
 	"gorm.io/gorm"
 )
@@ -34,4 +35,12 @@ func GetDetailCategory(id uint) (helper.Categories, error) {
 		return category, err
 	}
 	return category, nil
+}
+func ChangeNameCategory(c *schema.Category, db *gorm.DB, newName string) error {
+	result := db.Model(c).Update("category_name", newName)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }

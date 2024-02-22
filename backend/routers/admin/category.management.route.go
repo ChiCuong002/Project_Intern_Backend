@@ -1,7 +1,7 @@
 package adminRoute
 
 import (
-	"main/handlers/controllers/category"
+	controllers "main/handlers/controllers/category"
 
 	"github.com/labstack/echo/v4"
 )
@@ -9,4 +9,6 @@ import (
 func CategoriesManagementRouters(router *echo.Group) {
 	router.GET("/categories", controllers.GetCategories)
 	router.GET("/category/:id", controllers.DetailCategory)
+	router.POST("/add-category", controllers.AddCategory)
+	router.PATCH("/update-category", controllers.EditCategory)
 }
