@@ -28,17 +28,18 @@ type User struct {
 	ImageID     uint      `json:"-" gorm:"foreignKey:ImageID"`
 	Image       Image     `json:"image"`
 }
+type Status struct {
+	StatusID uint `gorm:"primaryKey;autoIncrement"`
+	Status   string
+	Products []Product `gorm:"foreignKey:StatusID"`
+}
 type Category struct {
 	CategoryID   uint `gorm:"primaryKey;autoIncrement"`
 	CategoryName string
 	IsActive     bool      `gorm:"default:true"`
 	Products     []Product `gorm:"foreignKey:CategoryID"`
 }
-type Status struct {
-	StatusID uint `gorm:"primaryKey;autoIncrement"`
-	Status   string
-	Products []Product `gorm:"foreignKey:StatusID"`
-}
+
 type Product struct {
 	ProductID   uint           `json:"product_id" form:"product_id" gorm:"primaryKey;autoIncrement"`
 	UserID      uint           `json:"user_id" form:"user_id"`
@@ -77,5 +78,6 @@ func Migration() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&Role{}, &User{}, &Category{}, &Product{}, &Image{}, &Order{})
+	db.AutoMigrate(&Role{}, &User{}, &Status{}, &Category{}, &Product{}, &Image{}, &Order{})
+
 }

@@ -10,9 +10,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID, quantity uint) error {
+func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID uint) error {
 	var user schema.User
 	var product schema.Product
+	var seller schema.User
+
+	if userID == productID {
+		return errors.New("Bạn không thể mua sản phẩm của chính bạn")
+	}
+
 	if err := db.First(&user, userID).Error; err != nil {
 		return err
 	}
@@ -21,18 +27,38 @@ func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID, quantity ui
 		return err
 	}
 
-	// Kiểm tra số dư người dùng và sự có sẵn của sản phẩm
-	if user.Balance < product.Price*float64(quantity) || product.Quantity < quantity {
-		return errors.New("insufficient balance or insufficient product quantity")
+	// Kiểm tra số dư người mua và sự có sẵn của sản phẩm
+	if user.Balance < product.Price {
+		return errors.New("Số dư không đủ hoặc số lượng sản phẩm không đủ")
+	}
+
+	// Kiểm tra người bán và xác nhận không mua sản phẩm của chính mình
+	if err := db.First(&seller, product.UserID).Error; err != nil {
+		return errors.New("Người bán không tồn tại")
+	}
+
+	if userID == seller.UserID {
+		return errors.New("Bạn không thể mua sản phẩm của chính bạn")
 	}
 
 	// Thực hiện giao dịch mua hàng
-	orderTotal := product.Price * float64(quantity)
+	orderTotal := product.Price
 	user.Balance -= orderTotal
-	product.Quantity -= quantity
+	seller.Balance += orderTotal
 
 	// Cập nhật số dư trong bảng User
 	if err := db.Model(&user).Update("balance", user.Balance).Error; err != nil {
+		return err
+	}
+
+	if err := db.Model(&seller).Update("balance", seller.Balance).Error; err != nil {
+		return err
+	}
+
+	// Set status_id của sản phẩm thành 2
+	product.StatusID = 2
+
+	if err := db.Model(&product).Updates(map[string]interface{}{"status_id": product.StatusID}).Error; err != nil {
 		return err
 	}
 
@@ -48,9 +74,10 @@ func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID, quantity ui
 	if err := db.Create(&newOrder).Error; err != nil {
 		return err
 	}
-	// Không cần trả về số dư cập nhật, chỉ trả về nil nếu không có lỗi
+
+	// Trả về thông tin người mua và thông báo thành công
 	return c.JSON(http.StatusOK, echo.Map{
 		"user":    user,
-		"message": "Dat hang thành công",
+		"message": "Đặt hàng thành công",
 	})
 }

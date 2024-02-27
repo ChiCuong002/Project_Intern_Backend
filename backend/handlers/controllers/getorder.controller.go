@@ -11,7 +11,6 @@ import (
 type ThongTinOrder struct {
 	UserID    uint `json:"userID"`
 	ProductID uint `json:"productID"`
-	Quantity  uint `json:"quantity"`
 }
 
 func PurchaseProductController(db *gorm.DB) echo.HandlerFunc {
@@ -24,7 +23,7 @@ func PurchaseProductController(db *gorm.DB) echo.HandlerFunc {
 		}
 
 		// Call the original PurchaseProduct function
-		err := services.PurchaseProduct(db, c, thongtin.UserID, thongtin.ProductID, thongtin.Quantity)
+		err := services.PurchaseProduct(db, c, thongtin.UserID, thongtin.ProductID)
 		if err != nil {
 			// Handle error if needed
 			return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
