@@ -7,11 +7,12 @@ import (
 )
 
 func InitNormalRouters(app *echo.Echo) {
-	// //register route
+	//register route
 	app.POST("/register", controllers.RegisterUser)
 	//login route
 	app.POST("/login", controllers.Login)
 	//categories drop down
 	app.GET("/categories-dropdown", controllers.CategoriesDropDown)
-	//all product
+	//home page
+	app.GET("/homepage", controllers.HomePage)
 }

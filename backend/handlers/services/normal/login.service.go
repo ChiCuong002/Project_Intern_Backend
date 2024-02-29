@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	storage "main/database"
+	"main/helper/scope"
 	helper "main/helper/struct"
+	paginationHelper "main/helper/struct"
+	productHelper "main/helper/struct/product"
 	"main/schema"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -18,15 +21,15 @@ func Login(username, password string) (schema.User, string, error) {
 	//check phone number in db
 	result := db.Where("phone_number = ?", username).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return schema.User{}, "", fmt.Errorf("User not registered: %v", result.Error)
+		return schema.User{}, "", fmt.Errorf("user not registered: %v", result.Error)
 	}
 	//check if user is active
 	if !user.IsActive {
-		return schema.User{}, "", fmt.Errorf("User is blocked")
+		return schema.User{}, "", fmt.Errorf("user is blocked")
 	}
 	//check match password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return schema.User{}, "", fmt.Errorf("Password is not match")
+		return schema.User{}, "", fmt.Errorf("password is not match")
 	}
 	//create jwt token
 	claims := &helper.JwtCustomClaims{
@@ -38,7 +41,7 @@ func Login(username, password string) (schema.User, string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte("secret"))
 	if err != nil {
-		return schema.User{}, "", fmt.Errorf("Signed token error")
+		return schema.User{}, "", fmt.Errorf("signed token error")
 	}
 	return user, t, nil
 }
@@ -50,7 +53,24 @@ func CategoriesDropDown() ([]helper.CategoriesDropDown, error) {
 		return category, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return category, fmt.Errorf("Can't found any categories")
+		return category, fmt.Errorf("can't found any categories")
 	}
 	return category, nil
+}
+func SearchProducts(query *gorm.DB, search string) *gorm.DB {
+	if search != "" {
+		query = query.Where("product_name like ?", "%"+search+"%")
+	}
+	return query
+
+}
+func GetHomePageProduct(pagination paginationHelper.Pagination) (*paginationHelper.Pagination, error) {
+	db := storage.GetDB()
+	products := []productHelper.DetailProductRes{}
+	query := db.Model(&products)
+	query = SearchProducts(query, pagination.Search)
+	query = query.Scopes(scope.Paginate(query, &pagination))
+	query.Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").Find(&products)
+	pagination.Rows = products
+	return &pagination, nil
 }

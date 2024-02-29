@@ -299,37 +299,13 @@ func AddBalanceAllUser(c echo.Context) error {
 		"message": "Add balance for all user successfully",
 	})
 }
-
-// func MyProduct(c echo.Context) error {
-// 	userID := c.Get("userID").(uint)
-// 	page, err := strconv.Atoi(c.QueryParam("page"))
-// 	if err != nil {
-// 		page = PAGE_DEFAULT
-// 	}
-
-// 	limit, err := strconv.Atoi(c.QueryParam("limit"))
-// 	if err != nil {
-// 		limit = LIMIT_DEFAULT
-// 	}
-// 	sort := c.QueryParam("sort")
-// 	if sort != "" {
-// 		sort = sortString(sort)
-// 	} else {
-// 		sort = SORT_DEFAULT
-// 	}
-// 	search := c.QueryParam("search")
-// 	pagination := paginationHelper.Pagination{
-// 		Page:   page,
-// 		Limit:  limit,
-// 		Sort:   sort,
-// 		Search: search,
-// 	}
-// 	products, err := service.GetAllProduct(pagination)
-// 	if err != nil {
-// 		return c.JSON(http.StatusInternalServerError, echo.Map{
-// 			"error": err.Error(),
-// 		})
-// 	}
-// 	return c.JSON(http.StatusOK, products)
-// 	return nil
-// }
+func MyProfile(c echo.Context) error {
+	idInt := c.Get("userID").(uint)
+	fmt.Println("id: ", idInt)
+	user, err := userServices.UserDetail(uint(idInt))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	fmt.Println("user: ", user)
+	return c.JSON(http.StatusOK, user)
+}

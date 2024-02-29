@@ -5,6 +5,8 @@ import (
 	"fmt"
 	storage "main/database"
 	services "main/handlers/services/normal"
+	paginationHelper "main/helper/struct"
+	"strconv"
 
 	//"main/helper/validation"
 	"main/schema"
@@ -13,6 +15,33 @@ import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const (
+	LIMIT_DEFAULT = 10
+	PAGE_DEFAULT  = 1
+	SORT_DEFAULT  = " product_id desc"
+)
+
+func sortString(sort string) string {
+	order := sort[0]
+	sortString := sort[1:]
+	fmt.Println("sortString: ", sortString)
+	fmt.Println("ASCII: ", int(order))
+	fmt.Println("order: ", order)
+	fmt.Println("rune(order): ", rune(order))
+	fmt.Println("rune('+'): ", rune('+'))
+	fmt.Println("rune('-'): ", rune('-'))
+
+	if rune(order) == '+' || rune(order) == ' ' {
+		sortString = sortString + " asc"
+	} else if rune(order) == '-' {
+		sortString = sortString + " desc"
+	} else {
+		sortString = ""
+	}
+	fmt.Println("sortString: ", sortString)
+	return sortString
+}
 
 type LoginRequest struct {
 	PhoneNumber string `json:"phone_number"`
@@ -25,7 +54,7 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid JSON format"})
 	}
 
-	user := schema.User{}
+	//user := schema.User{}
 	username := LoginRequest.PhoneNumber
 	password := LoginRequest.Password
 	fmt.Println("Received phone_number:", username)
@@ -120,4 +149,34 @@ func CategoriesDropDown(c echo.Context) error {
 		"message":    "Get all categories successfull",
 		"categories": categories,
 	})
+}
+func HomePage(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		page = PAGE_DEFAULT
+	}
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		limit = LIMIT_DEFAULT
+	}
+	sort := c.QueryParam("sort")
+	if sort != "" {
+		sort = sortString(sort)
+	} else {
+		sort = SORT_DEFAULT
+	}
+	search := c.QueryParam("search")
+	pagination := paginationHelper.Pagination{
+		Page:   page,
+		Limit:  limit,
+		Sort:   sort,
+		Search: search,
+	}
+	products, err := services.GetHomePageProduct(pagination)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, products)
 }

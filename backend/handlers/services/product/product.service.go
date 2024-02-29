@@ -159,6 +159,3 @@ func UnblockProduct(id uint) error {
 	}
 	return nil
 }
-func MyProduct() error {
-	return nil
-}
