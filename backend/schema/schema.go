@@ -38,7 +38,7 @@ type Category struct {
 }
 type Status struct {
 	StatusID uint `gorm:"primaryKey;autoIncrement"`
-	Status   string
+	Status   string 
 	Products []Product `gorm:"foreignKey:StatusID"`
 }
 type Product struct {

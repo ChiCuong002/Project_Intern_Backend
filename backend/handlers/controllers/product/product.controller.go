@@ -242,7 +242,6 @@ func GetAllProduct(c echo.Context) error {
 	if err != nil {
 		page = PAGE_DEFAULT
 	}
-
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
 		limit = LIMIT_DEFAULT
@@ -261,6 +260,68 @@ func GetAllProduct(c echo.Context) error {
 		Search: search,
 	}
 	products, err := service.GetAllProduct(pagination)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, products)
+}
+func MyInventory(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		page = PAGE_DEFAULT
+	}
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		limit = LIMIT_DEFAULT
+	}
+	sort := c.QueryParam("sort")
+	if sort != "" {
+		sort = sortString(sort)
+	} else {
+		sort = SORT_DEFAULT
+	}
+	search := c.QueryParam("search")
+	pagination := paginationHelper.Pagination{
+		Page:   page,
+		Limit:  limit,
+		Sort:   sort,
+		Search: search,
+	}
+	userID := c.Get("userID").(uint)
+	products, err := service.GetMyInventory(pagination, userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, products)
+}
+func MyProduct(c echo.Context) error {
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		page = PAGE_DEFAULT
+	}
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		limit = LIMIT_DEFAULT
+	}
+	sort := c.QueryParam("sort")
+	if sort != "" {
+		sort = sortString(sort)
+	} else {
+		sort = SORT_DEFAULT
+	}
+	search := c.QueryParam("search")
+	pagination := paginationHelper.Pagination{
+		Page:   page,
+		Limit:  limit,
+		Sort:   sort,
+		Search: search,
+	}
+	userID := c.Get("userID").(uint)
+	products, err := service.GetMyInventory(pagination, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"error": err.Error(),

@@ -13,4 +13,5 @@ func InitNormalRouters(app *echo.Echo) {
 	app.POST("/login", controllers.Login)
 	//categories drop down
 	app.GET("/categories-dropdown", controllers.CategoriesDropDown)
+	//all product
 }

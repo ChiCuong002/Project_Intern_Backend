@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	STATUS_ACTIVE   = 1
-	STATUS_INACTIVE = 2
+	STATUS_ACTIVE   uint = 1
+	STATUS_INACTIVE uint = 2
 )
 
 func InsertProduct(tx *gorm.DB, product *helper.ProductInsert) error {
@@ -46,11 +46,11 @@ func UpdateProduct(product *helper.UpdateProduct) error {
 	db := storage.GetDB()
 	result := db.First(&schema.Product{}, product.ProductID)
 	if result.Error != nil {
-		return fmt.Errorf("Invalid product id")
+		return fmt.Errorf("invalid product id")
 	}
 	result = db.First(&schema.Category{}, product.CategoryID)
 	if result.Error != nil {
-		return fmt.Errorf("Invalid category id")
+		return fmt.Errorf("invalid category id")
 	}
 	result = db.Model(&schema.Product{}).Where("product_id = ?", product.ProductID).Updates(map[string]interface{}{
 		"category_id":  product.CategoryID,
@@ -89,6 +89,28 @@ func GetAllProduct(pagination paginationHelper.Pagination) (*paginationHelper.Pa
 	pagination.Rows = products
 	return &pagination, nil
 }
+func GetMyInventory(pagination paginationHelper.Pagination, userID uint) (*paginationHelper.Pagination, error) {
+	db := storage.GetDB()
+	products := []productHelper.DetailProductRes{}
+	query := db.Model(&products).Where("user_id = ? and status_id = 2", userID)
+	fmt.Printf("query: %+v\n", query)
+	query = SearchProducts(query, pagination.Search)
+	query = query.Scopes(scope.Paginate(query, &pagination))
+	query.Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").Find(&products)
+	pagination.Rows = products
+	return &pagination, nil
+}
+func GetMyProduct(pagination paginationHelper.Pagination, userID uint) (*paginationHelper.Pagination, error) {
+	db := storage.GetDB()
+	products := []productHelper.DetailProductRes{}
+	query := db.Model(&products).Where("user_id = ?", userID).Where("status_id = 1")
+	fmt.Printf("query: %+v\n", query)
+	query = SearchProducts(query, pagination.Search)
+	query = query.Scopes(scope.Paginate(query, &pagination))
+	query.Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").Where(&schema.Product{UserID: userID, StatusID: STATUS_ACTIVE}).Find(&products)
+	pagination.Rows = products
+	return &pagination, nil
+}
 func CompareUserID(userID, productID uint) error {
 	db := storage.GetDB()
 	product := schema.Product{}
@@ -107,10 +129,10 @@ func BlockProduct(id uint) error {
 	product := helper.DetailProductRes{}
 	result := db.Model(&product).First(&product, "product_id = ?", id)
 	if result.Error != nil {
-		return fmt.Errorf("Falied to get product")
+		return fmt.Errorf("falied to get product")
 	}
 	if product.StatusID != STATUS_ACTIVE {
-		return fmt.Errorf("This product is currently inactive")
+		return fmt.Errorf("this product is currently inactive")
 	}
 	product.StatusID = STATUS_INACTIVE
 	result = db.Model(&product).Where("product_id", product.ProductID).Update("status_id", product.StatusID)
@@ -125,10 +147,10 @@ func UnblockProduct(id uint) error {
 	product := helper.DetailProductRes{}
 	result := db.Model(&product).First(&product, "product_id = ?", id)
 	if result.Error != nil {
-		return fmt.Errorf("Falied to get product. %s", result.Error.Error())
+		return fmt.Errorf("falied to get product. %s", result.Error.Error())
 	}
 	if product.StatusID != STATUS_INACTIVE {
-		return fmt.Errorf("This product is currently active")
+		return fmt.Errorf("this product is currently active")
 	}
 	product.StatusID = STATUS_ACTIVE
 	result = db.Model(&product).Where("product_id", product.ProductID).Update("status_id", product.StatusID)

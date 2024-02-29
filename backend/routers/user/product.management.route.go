@@ -9,8 +9,11 @@ import (
 func ProductManagementRoutes(router *echo.Group) {
 	//add product
 	router.POST("/add-product", controllers.AddProduct)
-	//get product
-	router.GET("/my-products", controllers.GetAllProduct)
+	//get product inventory
+	router.GET("/my-inventory", controllers.MyInventory)
+	//get posted product
+	router.GET("/my-products", controllers.MyProduct)
+	//detail product
 	router.GET("/product/:id", controllers.DetailProduct)
 	//update product
 	router.PATCH("/update-product/:id", controllers.UpdateProduct)
