@@ -161,7 +161,7 @@ func DeActiveProduct(id uint, userID uint) error {
 	if result.Error != nil {
 		return fmt.Errorf("falied to get product")
 	}
-	if product.User.UserID != userID {
+	if product.UserID != userID {
 		return fmt.Errorf("you are not the owner of this product")
 	}
 	if product.StatusID != STATUS_ACTIVE {
@@ -182,7 +182,7 @@ func ActiveProduct(id uint, userID uint) error {
 	if result.Error != nil {
 		return fmt.Errorf("falied to get product. %s", result.Error.Error())
 	}
-	if product.User.UserID != userID {
+	if product.UserID != userID {
 		return fmt.Errorf("you are not the owner of this product")
 	}
 	if product.StatusID != STATUS_INACTIVE {
