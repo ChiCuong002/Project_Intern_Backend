@@ -68,13 +68,38 @@ func UpdateProduct(product *helper.UpdateProduct) error {
 	}
 	return nil
 }
+
 func DetailProduct(id uint) (productHelper.DetailProductRes, error) {
 	db := storage.GetDB()
 	product := productHelper.DetailProductRes{}
-	err := db.Model(&productHelper.DetailProductRes{}).Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").First(&product, id).Error
+	err := db.Model(&productHelper.DetailProductRes{}).Preload("ProductImages.Image").First(&product, id).Error
 	if err != nil {
 		return product, err
 	}
+	fmt.Println("product: ", product)
+	// Load User
+	var user productHelper.User
+	err = db.Preload("Image").First(&user, product.UserID).Error
+	if err != nil {
+		return product, err
+	}
+	product.User = user
+
+	// Load Category
+	var category productHelper.Category
+	err = db.First(&category, product.CategoryID).Error
+	if err != nil {
+		return product, err
+	}
+	product.Category = category
+
+	// Load Status
+	var status productHelper.Status
+	err = db.First(&status, product.StatusID).Error
+	if err != nil {
+		return product, err
+	}
+	product.Status = status
 	return product, nil
 }
 func SearchProducts(query *gorm.DB, search string) *gorm.DB {

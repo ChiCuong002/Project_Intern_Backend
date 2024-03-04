@@ -2,13 +2,15 @@ package helper
 
 type DetailProductRes struct {
 	ProductID     uint           `json:"product_id" gorm:"primaryKey;autoIncrement"`
+	UserID        uint           `json:"-"`
 	User          User           `json:"user" gorm:"foreignKey:UserID"`
+	CategoryID    uint           `json:"-"`
 	Category      Category       `json:"category" gorm:"foreignKey:CategoryID"`
 	ProductName   string         `json:"product_name"`
 	Description   string         `json:"description"`
 	Price         float64        `json:"price"`
 	Quantity      uint           `json:"quantity"`
-	StatusID      uint           `json:"status_id" gorm:"foreignKey:StatusID"`
+	StatusID      uint           `json:"-" gorm:"foreignKey:StatusID"`
 	Status        Status         `json:"status"`
 	ProductImages []ProductImage `json:"product_images" gorm:"foreignKey:ProductID"`
 }
@@ -32,6 +34,8 @@ type User struct {
 	UserID    uint   `json:"user_id" gorm:"primaryKey;autoIncrement"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
+	ImageID   uint   `json:"-" gorm:"foreignKey:ImageID"`
+	Image     *Image `json:"image"`
 }
 type Category struct {
 	CategoryID   uint   `json:"category_id" gorm:"primaryKey;autoIncrement"`
