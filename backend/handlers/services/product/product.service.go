@@ -11,7 +11,6 @@ import (
 	helper "main/helper/struct/product"
 	productHelper "main/helper/struct/product"
 	"main/schema"
-	"net/http"
 	"time"
 
 	"errors"
@@ -260,9 +259,5 @@ func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID uint) error 
 		return err
 	}
 
-	// Trả về thông tin người mua và thông báo thành công
-	return c.JSON(http.StatusOK, echo.Map{
-		"user":    user,
-		"message": "Buy product successfully",
-	})
+	return nil
 }
