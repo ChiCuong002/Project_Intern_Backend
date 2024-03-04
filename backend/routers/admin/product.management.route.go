@@ -11,8 +11,4 @@ func ProductManagementRoutes(router *echo.Group) {
 	router.GET("/products", controllers.GetAllProduct)
 	//detail product
 	router.GET("/product/:id", controllers.DetailProduct)
-	//block product
-	router.PATCH("/block-product/:id", controllers.BlockProduct)
-	//unblock product
-	router.PATCH("/unblock-product/:id", controllers.UnblockProduct)
 }

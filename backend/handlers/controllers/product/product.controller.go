@@ -20,6 +20,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 type productForm struct {
@@ -329,14 +330,14 @@ func MyProduct(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, products)
 }
-func BlockProduct(c echo.Context) error {
+func DeActiveProduct(c echo.Context) error {
 	productID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": "Failed to get product id. " + err.Error(),
 		})
 	}
-	err = service.BlockProduct(uint(productID))
+	err = service.DeActiveProduct(uint(productID), c.Get("userID").(uint))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err.Error(),
@@ -346,14 +347,14 @@ func BlockProduct(c echo.Context) error {
 		"message": "Block product successfully",
 	})
 }
-func UnblockProduct(c echo.Context) error {
+func ActiveProduct(c echo.Context) error {
 	productID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": "Failed to get product id",
 		})
 	}
-	err = service.UnblockProduct(uint(productID))
+	err = service.ActiveProduct(uint(productID), c.Get("userID").(uint))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err.Error(),
@@ -362,4 +363,31 @@ func UnblockProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"message": "Unblock product successfully",
 	})
+}
+
+// order
+type ThongTinOrder struct {
+	//UserID    uint `json:"userID"`
+	ProductID uint `json:"productID"`
+}
+
+func PurchaseProductController(db *gorm.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var thongtin ThongTinOrder
+
+		// Bind JSON data from the request to thongtin
+		if err := c.Bind(&thongtin); err != nil {
+			return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request payload"})
+		}
+
+		// Call the original PurchaseProduct function
+		err := service.PurchaseProduct(db, c, c.Get("userID").(uint), thongtin.ProductID)
+		if err != nil {
+			// Handle error if needed
+			return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+		}
+
+		// Return success response
+		return c.JSON(http.StatusOK, echo.Map{"message": "Purchase successful"})
+	}
 }

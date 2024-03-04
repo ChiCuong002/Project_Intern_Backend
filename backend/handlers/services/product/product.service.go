@@ -11,7 +11,12 @@ import (
 	helper "main/helper/struct/product"
 	productHelper "main/helper/struct/product"
 	"main/schema"
+	"net/http"
+	"time"
 
+	"errors"
+
+	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
@@ -124,12 +129,15 @@ func CompareUserID(userID, productID uint) error {
 	return nil
 }
 
-func BlockProduct(id uint) error {
+func DeActiveProduct(id uint, userID uint) error {
 	db := storage.GetDB()
 	product := helper.DetailProductRes{}
 	result := db.Model(&product).First(&product, "product_id = ?", id)
 	if result.Error != nil {
 		return fmt.Errorf("falied to get product")
+	}
+	if product.User.UserID != userID {
+		return fmt.Errorf("you are not the owner of this product")
 	}
 	if product.StatusID != STATUS_ACTIVE {
 		return fmt.Errorf("this product is currently inactive")
@@ -142,12 +150,15 @@ func BlockProduct(id uint) error {
 	return nil
 }
 
-func UnblockProduct(id uint) error {
+func ActiveProduct(id uint, userID uint) error {
 	db := storage.GetDB()
 	product := helper.DetailProductRes{}
 	result := db.Model(&product).First(&product, "product_id = ?", id)
 	if result.Error != nil {
 		return fmt.Errorf("falied to get product. %s", result.Error.Error())
+	}
+	if product.User.UserID != userID {
+		return fmt.Errorf("you are not the owner of this product")
 	}
 	if product.StatusID != STATUS_INACTIVE {
 		return fmt.Errorf("this product is currently active")
@@ -158,4 +169,75 @@ func UnblockProduct(id uint) error {
 		return fmt.Errorf(result.Error.Error())
 	}
 	return nil
+}
+func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID uint) error {
+	var user schema.User
+	var product schema.Product
+	var seller schema.User
+
+	// if userID == productID {
+	// 	return errors.New("bạn không thể mua sản phẩm của chính bạn")
+	// }
+
+	if err := db.First(&user, userID).Error; err != nil {
+		return err
+	}
+
+	if err := db.First(&product, productID).Error; err != nil {
+		return err
+	}
+
+	// Kiểm tra số dư người mua và sự có sẵn của sản phẩm
+	if user.Balance < product.Price {
+		return errors.New("số dư không đủ hoặc số lượng sản phẩm không đủ")
+	}
+
+	// Kiểm tra người bán và xác nhận không mua sản phẩm của chính mình
+	if err := db.First(&seller, product.UserID).Error; err != nil {
+		return errors.New("người bán không tồn tại")
+	}
+
+	if userID == seller.UserID {
+		return errors.New("bạn không thể mua sản phẩm của chính bạn")
+	}
+
+	// Thực hiện giao dịch mua hàng
+	orderTotal := product.Price
+	user.Balance -= orderTotal
+	seller.Balance += orderTotal
+
+	// Cập nhật số dư trong bảng User
+	if err := db.Model(&user).Update("balance", user.Balance).Error; err != nil {
+		return err
+	}
+
+	if err := db.Model(&seller).Update("balance", seller.Balance).Error; err != nil {
+		return err
+	}
+
+	// Set status_id của sản phẩm thành 2
+	product.StatusID = 2
+	product.UserID = userID
+	if err := db.Model(&product).Updates(map[string]interface{}{"status_id": product.StatusID, "user_id": product.UserID}).Error; err != nil {
+		return err
+	}
+
+	// Thêm mới đơn hàng vào bảng Order
+	newOrder := schema.Order{
+		UserID:      userID,
+		ProductID:   productID,
+		OrderTotal:  orderTotal,
+		OrderDate:   time.Now(),
+		OrderStatus: "Đã đặt hàng",
+	}
+
+	if err := db.Create(&newOrder).Error; err != nil {
+		return err
+	}
+
+	// Trả về thông tin người mua và thông báo thành công
+	return c.JSON(http.StatusOK, echo.Map{
+		"user":    user,
+		"message": "Đặt hàng thành công",
+	})
 }
