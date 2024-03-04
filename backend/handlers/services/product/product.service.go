@@ -214,16 +214,16 @@ func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID uint) error 
 
 	// Kiểm tra số dư người mua và sự có sẵn của sản phẩm
 	if user.Balance < product.Price {
-		return errors.New("số dư không đủ hoặc số lượng sản phẩm không đủ")
+		return errors.New("your balance is not enough to buy")
 	}
 
 	// Kiểm tra người bán và xác nhận không mua sản phẩm của chính mình
 	if err := db.First(&seller, product.UserID).Error; err != nil {
-		return errors.New("người bán không tồn tại")
+		return errors.New("the owner is not exists")
 	}
 
 	if userID == seller.UserID {
-		return errors.New("bạn không thể mua sản phẩm của chính bạn")
+		return errors.New("can not buy your own product")
 	}
 
 	// Thực hiện giao dịch mua hàng
@@ -253,7 +253,7 @@ func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID uint) error 
 		ProductID:   productID,
 		OrderTotal:  orderTotal,
 		OrderDate:   time.Now(),
-		OrderStatus: "Đã đặt hàng",
+		OrderStatus: "success",
 	}
 
 	if err := db.Create(&newOrder).Error; err != nil {
@@ -263,6 +263,6 @@ func PurchaseProduct(db *gorm.DB, c echo.Context, userID, productID uint) error 
 	// Trả về thông tin người mua và thông báo thành công
 	return c.JSON(http.StatusOK, echo.Map{
 		"user":    user,
-		"message": "Đặt hàng thành công",
+		"message": "Buy product successfully",
 	})
 }
