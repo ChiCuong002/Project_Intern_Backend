@@ -24,16 +24,17 @@ func (UserInsert) TableName() string {
 }
 
 type UserResponse struct {
-	UserID      uint   `json:"user_id"`
-	RoleID      uint   `json:"role_id"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Address     string `json:"address"`
-	Email       string `json:"email"`
-	PhoneNumber string `json:"phone_number"`
-	IsActive    bool   `json:"is_active"`
-	ImageID     uint   `json:"-" gorm:"foreignKey:ImageID"`
-	Image       *Image `json:"image"`
+	UserID      uint    `json:"user_id"`
+	RoleID      uint    `json:"role_id"`
+	FirstName   string  `json:"first_name"`
+	LastName    string  `json:"last_name"`
+	Address     string  `json:"address"`
+	Email       string  `json:"email"`
+	PhoneNumber string  `json:"phone_number"`
+	Balance     float64 `json:"balance"`
+	IsActive    bool    `json:"is_active"`
+	ImageID     uint    `json:"-" gorm:"foreignKey:ImageID"`
+	Image       *Image  `json:"image"`
 }
 type Image struct {
 	ImageID   uint   `json:"image_id" gorm:"primaryKey;autoIncrement"`

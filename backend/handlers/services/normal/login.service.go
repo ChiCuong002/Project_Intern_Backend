@@ -67,7 +67,7 @@ func SearchProducts(query *gorm.DB, search string) *gorm.DB {
 func GetHomePageProduct(pagination paginationHelper.Pagination) (*paginationHelper.Pagination, error) {
 	db := storage.GetDB()
 	products := []productHelper.DetailProductRes{}
-	query := db.Model(&products)
+	query := db.Model(&products).Where("status_id = 1")
 	query = SearchProducts(query, pagination.Search)
 	query = query.Scopes(scope.Paginate(query, &pagination))
 	query.Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").Find(&products)

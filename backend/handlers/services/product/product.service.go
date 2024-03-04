@@ -92,7 +92,7 @@ func GetAllProduct(pagination paginationHelper.Pagination) (*paginationHelper.Pa
 func GetMyInventory(pagination paginationHelper.Pagination, userID uint) (*paginationHelper.Pagination, error) {
 	db := storage.GetDB()
 	products := []productHelper.DetailProductRes{}
-	query := db.Model(&products).Where("user_id = ? and status_id = 2", userID)
+	query := db.Model(&products).Where("user_id = ?", userID)
 	fmt.Printf("query: %+v\n", query)
 	query = SearchProducts(query, pagination.Search)
 	query = query.Scopes(scope.Paginate(query, &pagination))
