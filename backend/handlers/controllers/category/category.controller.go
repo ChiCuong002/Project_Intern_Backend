@@ -86,9 +86,14 @@ type AddCategoryRequest struct {
 
 func AddCategory(c echo.Context) error {
 	var addCategoryRequest AddCategoryRequest
-	if err := c.Bind(&addCategoryRequest); err != nil {
+	if addCategoryRequest.NameCategory == "" {
 		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message": "Không lấy được dữ liệu",
+			"message": "Category name is null",
+		})
+	}
+	if err := c.Bind(&addCategoryRequest); err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": "Server error",
 		})
 	}
 
@@ -121,7 +126,7 @@ func EditCategory(c echo.Context) error {
 		//fmt.Println("Error binding request:", err)
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": "lấy loại không được",
-			"error": err.Error(),
+			"error":   err.Error(),
 		})
 	}
 
