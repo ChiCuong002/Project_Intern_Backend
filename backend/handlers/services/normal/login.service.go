@@ -68,9 +68,10 @@ func GetHomePageProduct(pagination paginationHelper.Pagination) (*paginationHelp
 	db := storage.GetDB()
 	products := []productHelper.DetailProductRes{}
 	query := db.Model(&products).Where("status_id = 1")
+	query = query.Preload("User").Preload("ProductImages.Image")
 	query = SearchProducts(query, pagination.Search)
 	query = query.Scopes(scope.Paginate(query, &pagination))
-	query.Preload("ProductImages.Image").Preload("User").Preload("Category").Preload("Status").Find(&products)
+	query.Find(&products)
 	pagination.Rows = products
 	return &pagination, nil
 }
