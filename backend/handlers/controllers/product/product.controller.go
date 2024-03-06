@@ -77,7 +77,7 @@ func configureAWSService() (awsService, error) {
 func AddProduct(c echo.Context) error {
 	productData := &productForm{}
 	if err := c.Bind(productData); err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid request data")
+		return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid request data"})
 	}
 	//begin transaction
 	tx := storage.GetDB().Begin()
@@ -94,17 +94,17 @@ func AddProduct(c echo.Context) error {
 	err := service.InsertProduct(tx, product)
 	if err != nil {
 		tx.Rollback()
-		return c.JSON(http.StatusInternalServerError, "Failed to insert product")
+		return c.JSON(http.StatusInternalServerError, echo.Map{"message" : "Failed to insert product"})
 	}
 	// //Get multipart form from the request
 	form, err := c.MultipartForm()
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid form data")
+		return c.JSON(http.StatusBadRequest, echo.Map{"message": "Invalid form data"})
 	}
 	// Get the image files from the form
 	images, ok := form.File["images"]
 	if !ok {
-		return c.JSON(http.StatusBadRequest, "No image files")
+		return c.JSON(http.StatusBadRequest, echo.Map{"message": "No image files"})
 	}
 	//load .env variable
 	err = godotenv.Load()
@@ -130,7 +130,7 @@ func AddProduct(c echo.Context) error {
 		err = service.InsertImage(tx, img)
 		if err != nil {
 			tx.Rollback()
-			return c.JSON(http.StatusInternalServerError, "Failed to insert image")
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to insert image"})
 		}
 		productImg := &helper.ProductImageInsert{
 			ProductID: product.ProductID,
@@ -139,7 +139,7 @@ func AddProduct(c echo.Context) error {
 		err = service.InsertProductImage(tx, productImg)
 		if err != nil {
 			tx.Rollback()
-			return c.JSON(http.StatusInternalServerError, "Failed to insert product image")
+			return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to insert product image"})
 		}
 		//product.Images = append(product.Images, *img)
 		// Open the image file
