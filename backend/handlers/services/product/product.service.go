@@ -82,7 +82,7 @@ func DetailProduct(id uint) (productHelper.DetailProductRes, error) {
 	if err != nil {
 		return product, err
 	}
-	product.User = user
+	product.User = &user
 
 	// Load Category
 	var category productHelper.Category
