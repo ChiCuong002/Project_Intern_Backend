@@ -89,12 +89,13 @@ func AddProduct(c echo.Context) error {
 		Description: productData.Description,
 		Price:       productData.Price,
 		Quantity:    productData.Quantity,
+		StatusID:    2,
 	}
 	// //insert product into database
 	err := service.InsertProduct(tx, product)
 	if err != nil {
 		tx.Rollback()
-		return c.JSON(http.StatusInternalServerError, echo.Map{"message" : "Failed to insert product"})
+		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Failed to insert product"})
 	}
 	// //Get multipart form from the request
 	form, err := c.MultipartForm()
