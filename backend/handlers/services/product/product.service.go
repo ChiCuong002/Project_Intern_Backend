@@ -25,7 +25,7 @@ const (
 )
 
 func InsertProduct(tx *gorm.DB, product *helper.ProductInsert) error {
-	product.StatusID = STATUS_ACTIVE
+	product.StatusID = STATUS_INACTIVE
 	result := tx.Create(product)
 	if result.Error != nil {
 		return result.Error
