@@ -45,7 +45,7 @@ type Product struct {
 	ProductID   uint           `json:"product_id" form:"product_id" gorm:"primaryKey;autoIncrement"`
 	UserID      uint           `json:"user_id" form:"user_id"`
 	CategoryID  uint           `json:"category_id" form:"category_id"`
-	StatusID    uint           `json:"status_id" gorm:"default:1"`
+	StatusID    uint           `json:"status_id" gorm:"default:2"`
 	ProductName string         `json:"product_name" form:"product_name"`
 	Description string         `json:"description" form:"description"`
 	Price       float64        `json:"price" form:"price"`
